@@ -7,66 +7,66 @@ export const WelcomePage: FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4">
-      <div className="w-full max-w-2xl animate-slide-up">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            ¡Bienvenido, <span className="gradient-text">{user?.nombre || 'Usuario'}</span>! 🎉
-          </h1>
-          <p className="text-xl text-text-secondary">
-            Tu cuenta ha sido creada exitosamente.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Active Plan Card */}
-          <div className="card glass relative overflow-hidden border-accent-violet/30 shadow-glow">
-            <div className="absolute top-0 right-0 bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-bl-lg border-b border-l border-green-500/20">
-              ACTIVO ✅
+    <div className="min-h-screen bg-bg-primary p-6">
+      <div className="max-w-4xl mx-auto">
+        <header className="flex justify-between items-center mb-12">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">⚡</span>
+            <span className="text-xl font-bold">AutoSolve</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-text-secondary">
+              {user?.email}
+            </span>
+            <div className="w-8 h-8 rounded-full bg-accent-gradient flex items-center justify-center font-bold">
+              {user?.nombre?.[0] || 'U'}
             </div>
+          </div>
+        </header>
+
+        <main className="animate-slide-up">
+          <div className="card glass text-center py-16 mb-8 border-accent-violet/20 shadow-glow">
+            <div className="text-6xl mb-6">🎉</div>
+            <h1 className="text-4xl font-bold mb-4">
+              ¡Todo listo! AutoSolve está configurado
+            </h1>
+            <p className="text-xl text-text-secondary max-w-xl mx-auto mb-8">
+              Ya puedes ir a cualquier formulario de postulación y verás la magia en acción.
+              La extensión detectará los campos y te sugerirá las mejores respuestas.
+            </p>
             
-            <div className="mb-6">
-              <h3 className="text-xl font-bold mb-2">⚡ Plan Free</h3>
-              <div className="text-3xl font-bold mb-1">$0 <span className="text-sm text-text-muted font-normal">/mes</span></div>
+            <div className="flex justify-center gap-4">
+              <button 
+                onClick={() => navigate('/profile')}
+                className="btn btn-secondary"
+              >
+                Editar mi perfil
+              </button>
+              <a 
+                href="#" 
+                className="btn btn-primary"
+                onClick={(e) => e.preventDefault()}
+              >
+                Probar en un formulario
+              </a>
             </div>
-
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-green-400">✓</span> 20 resoluciones/día
-              </li>
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-green-400">✓</span> Sugerencias Copilot
-              </li>
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-green-400">✓</span> 1 Perfil básico
-              </li>
-            </ul>
-
-            <a href="#" className="text-sm text-accent-cyan hover:text-accent-violet block text-center border-t border-white/5 pt-4">
-              ¿Necesitas más? Ver planes Pro →
-            </a>
           </div>
 
-          {/* Next Steps */}
-          <div className="flex flex-col justify-center space-y-6">
-            <div className="space-y-4">
-              <p className="text-lg">
-                Para que AutoSolve pueda completar formularios por ti, necesitamos conocer un poco sobre tu experiencia.
-              </p>
-              <p className="text-text-secondary text-sm">
-                Solo te tomará 2 minutos y podrás usar IA para completarlo automáticamente subiendo tu CV.
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="card border-transparent hover:border-white/10">
+              <h3 className="text-lg font-bold mb-2">📊 Estadísticas (Pronto)</h3>
+              <p className="text-text-muted text-sm">
+                Pronto podrás ver cuántos formularios has completado y cuánto tiempo has ahorrado.
               </p>
             </div>
-
-            <button 
-              onClick={() => navigate('/profile')}
-              className="btn btn-primary w-full text-lg group"
-            >
-              Completar mi perfil
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </button>
+            <div className="card border-transparent hover:border-white/10">
+              <h3 className="text-lg font-bold mb-2">⭐ Actualizar a Pro (Pronto)</h3>
+              <p className="text-text-muted text-sm">
+                Funciones avanzadas como múltiples perfiles y cartas de presentación personalizadas.
+              </p>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -12,11 +12,11 @@ export const AuthPage: FC = () => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, determining destination...');
       if (user.onboarding_completed) {
-        console.log('Onboarding completed, navigating to /dashboard');
-        navigate('/dashboard', { replace: true });
-      } else {
-        console.log('Onboarding pending, navigating to /welcome');
+        console.log('Onboarding completed, navigating to /welcome');
         navigate('/welcome', { replace: true });
+      } else {
+        console.log('Onboarding pending, navigating to /profile');
+        navigate('/profile', { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);
@@ -31,9 +31,9 @@ export const AuthPage: FC = () => {
       console.error('Login failed during backend exchange:', error);
       if (typeof error === 'object' && error !== null) {
         console.error('Detailed Error:', JSON.stringify(error, null, 2));
-        // @ts-ignore
+        // @ts-expect-error - Error type is unknown but likely contains message
         if (error.message) console.error('Error Message:', error.message);
-        // @ts-ignore
+        // @ts-expect-error - Error type is unknown buf likely contains status
         if (error.status) console.error('Error Status:', error.status);
       }
     }

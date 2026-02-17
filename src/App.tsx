@@ -2,12 +2,12 @@ import { type FC, type ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { MainLayout } from './components/layout/MainLayout';
 
 // Pages
 import { AuthPage } from './pages/AuthPage';
-import { WelcomePage } from './pages/WelcomePage';
 import { ProfileWizardPage } from './pages/ProfileWizardPage';
-import { DashboardPage } from './pages/DashboardPage';
+import { WelcomePage } from './pages/WelcomePage';
 
 // Protected Route Component
 const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
@@ -51,33 +51,30 @@ const App: FC = () => {
             <Route path="/auth" element={<AuthPage />} />
 
             {/* Protected Routes */}
-            <Route
-              path="/welcome"
-              element={
-                <ProtectedRoute>
-                  <WelcomePage />
-                </ProtectedRoute>
-              }
-            />
+
             <Route
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <ProfileWizardPage />
+                  <MainLayout>
+                    <ProfileWizardPage />
+                  </MainLayout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/dashboard"
+              path="/welcome"
               element={
                 <ProtectedRoute>
-                  <DashboardPage />
+                  <MainLayout>
+                    <WelcomePage />
+                  </MainLayout>
                 </ProtectedRoute>
               }
             />
 
             {/* Default Route */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/profile" replace />} />
           </Routes>
         </Router>
       </AuthProvider>
