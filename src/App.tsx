@@ -1,0 +1,88 @@
+import { type FC, type ReactNode } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+// Pages
+import { AuthPage } from './pages/AuthPage';
+import { WelcomePage } from './pages/WelcomePage';
+import { ProfileWizardPage } from './pages/ProfileWizardPage';
+import { DashboardPage } from './pages/DashboardPage';
+
+// Protected Route Component
+const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <div className="w-12 h-12 border-4 border-accent-violet border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const App: FC = () => {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  if (!clientId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary text-red-500 p-8 text-center">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Error de Configuración</h1>
+          <p>Falta la variable de entorno VITE_GOOGLE_CLIENT_ID.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Public Route */}
+            <Route path="/auth" element={<AuthPage />} />
+
+            {/* Protected Routes */}
+            <Route
+              path="/welcome"
+              element={
+                <ProtectedRoute>
+                  <WelcomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfileWizardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Default Route */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </GoogleOAuthProvider>
+  );
+};
+
+export default App;
