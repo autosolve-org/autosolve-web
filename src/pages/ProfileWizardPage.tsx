@@ -11,7 +11,33 @@ import { api } from '../services/api';
 
 // Components
 import { CVUploader } from '../components/CVUploader';
-import { Sparkles, Save, CheckCircle2, ChevronDown, ChevronUp, User, Briefcase, GraduationCap } from 'lucide-react';
+import { 
+  Sparkles, Save, CheckCircle2, ChevronDown, ChevronUp, User, Briefcase, GraduationCap, 
+  Calendar as CalendarIcon 
+} from 'lucide-react';
+import { cn } from '../lib/utils';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+// Shadcn UI Components
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import { Button } from '../components/ui/button';
+import { Calendar } from '../components/ui/calendar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '../components/ui/popover';
+import { SocialNetworksManager } from '../components/SocialNetworksManager';
+import { PhoneInput } from '../components/ui/phone-input';
 
 export const ProfileWizardPage: FC = () => {
   const { user, updateUser } = useAuth();
@@ -24,8 +50,8 @@ export const ProfileWizardPage: FC = () => {
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(profileSections[0].id);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    'Datos Identitarios': true,
-    'Contacto y Redes': false
+    'Identidad': true,
+    'Documentación y Residencia': false
   });
 
   // Load initial data
@@ -47,7 +73,10 @@ export const ProfileWizardPage: FC = () => {
     setCompletion(calculateOverallCompletion(formData));
   }, [formData]);
 
-  const handleFieldChange = (name: string, value: string) => {
+  const handleFieldChange = (name: string, value: string | any[]) => {
+    // ... function content remains same, just update signature if needed
+    // But actually TS complains about 'any' in previous snippet, let's fix strictly if we can
+    // or just leave it since I am not changing function body here
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
       
@@ -102,14 +131,27 @@ export const ProfileWizardPage: FC = () => {
     }
   };
 
-  const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [group]: !prev[group]
-    }));
-  };
-
   const activeSection = profileSections.find(s => s.id === activeSectionId) || profileSections[0];
+
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => {
+      const isOpening = !prev[group];
+      const newState = { ...prev };
+
+      if (isOpening) {
+        // Close other groups in this section
+        const currentSectionGroups = Array.from(new Set(activeSection.fields.map(f => f.group || 'General')));
+        currentSectionGroups.forEach(g => {
+          if (g !== group) newState[g] = false;
+        });
+        newState[group] = true;
+      } else {
+        newState[group] = false;
+      }
+      
+      return newState;
+    });
+  };
 
   // Group fields if section has groups
   const groupedFields: Record<string, ProfileField[]> = {};
@@ -131,7 +173,7 @@ export const ProfileWizardPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div>
       <div className="flex justify-end mb-4">
         {showSaveSuccess && (
           <span className="text-green-400 text-sm flex items-center gap-2 animate-fade-in">
@@ -194,23 +236,90 @@ export const ProfileWizardPage: FC = () => {
                     )}
                     
                     {(isExpanded || !hasGroups) && (
-                      <div className={`p-6 animate-fade-in ${(idx > 0 && isExpanded && hasGroups) ? 'border-t border-white/5' : ''} grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5`}>
+                      <div className={`p-6 animate-fade-in ${(idx > 0 && isExpanded && hasGroups) ? 'border-t border-white/5' : ''} grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6`}>
                         {fields.map((field) => (
-                          <div key={field.name} className={`${field.type === 'textarea' ? 'md:col-span-2' : ''} group/field`}>
-                            <label className="block mb-1.5 text-[10px] font-bold tracking-wider text-text-muted group-focus-within/field:text-accent-violet transition-colors">
+                          <div key={field.name} className={`${(field.type === 'textarea' || field.type === 'social') ? 'md:col-span-2' : ''} group/field space-y-2`}>
+                            <label className="text-[11px] font-bold uppercase tracking-wider text-text-muted group-focus-within/field:text-accent-violet transition-colors flex items-center gap-1">
                               {field.label} {field.required && <span className="text-accent-cyan">*</span>}
                             </label>
+                            
                             {field.type === 'textarea' ? (
-                              <textarea
-                                className="w-full bg-bg-tertiary/50 border border-white/5 rounded-lg p-3 text-white placeholder-text-muted focus:border-accent-violet/50 focus:ring-1 focus:ring-accent-violet/20 outline-none transition-all min-h-[120px] resize-y shadow-inner text-sm leading-relaxed"
-                                placeholder={field.placeholder}
+                              <div className="relative group/textarea">
+                                <Textarea
+                                  className="bg-bg-tertiary/50 border-white/10 min-h-[120px] focus:border-accent-violet/50 resize-y pb-8"
+                                  placeholder={field.placeholder}
+                                  value={(formData[field.name] as string) || ''}
+                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(field.name, e.target.value)}
+                                  maxLength={field.maxLength || 500}
+                                />
+                                <div className="absolute bottom-2 right-2 flex items-center justify-end gap-2 pointer-events-none">
+                                  <span className="text-[10px] text-text-muted bg-bg-elevated/80 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/5">
+                                    {((formData[field.name] as string) || '').length} / {field.maxLength || 500}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : field.type === 'select' ? (
+                              <Select
                                 value={(formData[field.name] as string) || ''}
-                                onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                                onValueChange={(val) => handleFieldChange(field.name, val)}
+                              >
+                                <SelectTrigger className="bg-bg-tertiary/50 border-white/10 text-text-primary focus:ring-accent-violet/20">
+                                  <SelectValue placeholder={field.placeholder || "Seleccionar"} />
+                                </SelectTrigger>
+                                <SelectContent className="bg-bg-elevated border-white/10 text-text-primary">
+                                  {field.options?.map(opt => (
+                                    <SelectItem key={opt} value={opt} className="focus:bg-bg-tertiary focus:text-accent-violet cursor-pointer">
+                                      {opt}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : field.type === 'date' ? (
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal bg-bg-tertiary/50 border-white/10 hover:bg-bg-tertiary hover:text-white",
+                                      !formData[field.name] && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {formData[field.name] ? format(new Date(formData[field.name] as string), "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 bg-bg-elevated border-white/10" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={formData[field.name] ? new Date(formData[field.name] as string) : undefined}
+                                    onSelect={(date) => handleFieldChange(field.name, date?.toISOString() || '')}
+                                    initialFocus
+                                    className="p-3 pointer-events-auto"
+                                    classNames={{
+                                      day_selected: "bg-accent-violet text-white hover:bg-accent-violet hover:text-white focus:bg-accent-violet focus:text-white",
+                                      day_today: "bg-white/10 text-white",
+                                      day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-white/10 rounded-md transition-colors text-white",
+                                      head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                                    }}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            ) : field.type === 'social' ? (
+                              <SocialNetworksManager 
+                                value={(formData[field.name] as any) || []}
+                                onChange={(val) => handleFieldChange(field.name, val)}
                               />
+                            ) : field.type === 'tel' ? (
+                               <PhoneInput 
+                                  value={(formData[field.name] as string) || ''}
+                                  onChange={(val) => handleFieldChange(field.name, val)}
+                                  placeholder={field.placeholder}
+                                  className="bg-bg-tertiary/50 border-white/10 focus:border-accent-violet/50 h-10"
+                               />
                             ) : (
-                              <input
+                              <Input
                                 type={field.type}
-                                className="w-full bg-bg-tertiary/50 border border-white/5 rounded-lg p-3 text-white placeholder-text-muted focus:border-accent-violet/50 focus:ring-1 focus:ring-accent-violet/20 outline-none transition-all shadow-inner text-sm"
+                                className="bg-bg-tertiary/50 border-white/10 focus:border-accent-violet/50"
                                 placeholder={field.placeholder}
                                 value={(formData[field.name] as string) || ''}
                                 onChange={(e) => handleFieldChange(field.name, e.target.value)}

@@ -1,5 +1,5 @@
 import { type FC, type ReactNode } from 'react';
-import { Sidebar } from './Sidebar';
+import { Sidebar, MobileSidebar } from './Sidebar';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -12,16 +12,16 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-0 md:ml-64 flex flex-col min-w-0 bg-bg-primary relative overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 ml-0 lg:ml-56 flex flex-col min-w-0 bg-bg-primary relative overflow-y-auto overflow-x-hidden">
         
-        {/* Mobile Header Placeholder (if needed in future) */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-bg-secondary sticky top-0 z-30">
+        {/* Mobile Header - Responsive: visible below lg */}
+        <div className="lg:hidden flex items-center gap-4 p-4 border-b border-white/5 bg-bg-secondary sticky top-0 z-30">
+          <MobileSidebar />
           <span className="font-bold text-lg text-white">AutoSolve</span>
-          {/* Add Mobile Menu Toggle Here */}
         </div>
 
         {/* Content Wrapper */}
-        <div className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+        <div className="flex-1 p-6 md:p-8 max-w-6xl mx-auto w-full">
           <div className="animate-fade-in space-y-6">
             {children}
           </div>

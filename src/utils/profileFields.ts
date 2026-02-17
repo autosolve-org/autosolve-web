@@ -3,10 +3,12 @@
 export type ProfileField = {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'tel' | 'url' | 'textarea';
+  type: 'text' | 'email' | 'tel' | 'url' | 'textarea' | 'select' | 'date' | 'social';
   placeholder?: string;
   required?: boolean;
-  group?: string;
+  options?: string[]; // For select inputs
+  group?: string; // For internal grouping within a section
+  maxLength?: number;
 };
 
 export type ProfileSection = {
@@ -24,14 +26,14 @@ export const profileSections: ProfileSection[] = [
     icon: '👤',
     required: true,
     fields: [
-      // Datos Identitarios
+      // Grupo 1: Identidad y Contacto
       {
         name: 'nombre',
         label: 'Nombres',
         type: 'text',
         placeholder: 'Juan Román',
         required: true,
-        group: 'Datos Identitarios',
+        group: 'Identidad',
       },
       {
         name: 'apellido',
@@ -39,80 +41,101 @@ export const profileSections: ProfileSection[] = [
         type: 'text',
         placeholder: 'Pérez García',
         required: true,
-        group: 'Datos Identitarios',
+        group: 'Identidad',
       },
+      {
+        name: 'apodo',
+        label: 'Apodo / Nickname',
+        type: 'text',
+        placeholder: '@juanroman',
+        group: 'Identidad',
+      },
+      {
+        name: 'bio',
+        label: 'Biografia',
+        type: 'textarea',
+        placeholder: 'Desarrollador apasionado con más de 5 años...',
+        group: 'Identidad',
+        maxLength: 500,
+      },
+      {
+        name: 'email',
+        label: 'Email Personal',
+        type: 'email',
+        placeholder: 'juan@ejemplo.com',
+        required: true,
+        group: 'Identidad',
+      },
+      {
+        name: 'telefono',
+        label: 'Teléfono Móvil',
+        type: 'tel',
+        placeholder: '+51 987 654 321',
+        group: 'Identidad',
+      },
+      {
+        name: 'social_networks',
+        label: 'Redes Sociales',
+        type: 'social',
+        placeholder: 'Agrega tus redes profesionales',
+        group: 'Identidad',
+      },
+      // Grupo 2: Documentación y Ubicación
       {
         name: 'dni',
         label: 'DNI / Documento',
         type: 'text',
         placeholder: '12345678',
         required: true,
-        group: 'Datos Identitarios',
+        group: 'Documentación y Residencia',
       },
       {
         name: 'genero',
         label: 'Género',
-        type: 'text',
-        placeholder: 'Masculino / Femenino / Otro',
-        group: 'Datos Identitarios',
+        type: 'select',
+        options: ['Masculino', 'Femenino', 'No binario', 'Prefiero no decirlo'],
+        group: 'Documentación y Residencia',
       },
       {
-        name: 'bio',
-        label: 'Bio / Resumen Profesional',
-        type: 'textarea',
-        placeholder: 'Desarrollador apasionado por...',
-        group: 'Datos Identitarios',
-      },
-      // Contacto y Redes
-      {
-        name: 'email',
-        label: 'Email',
-        type: 'email',
-        placeholder: 'juan@ejemplo.com',
-        required: true,
-        group: 'Contacto y Redes',
-      },
-      {
-        name: 'telefono',
-        label: 'Teléfono',
-        type: 'tel',
-        placeholder: '+51 987 654 321',
-        group: 'Contacto y Redes',
+        name: 'fecha_nacimiento',
+        label: 'Fecha de Nacimiento',
+        type: 'date',
+        group: 'Documentación y Residencia',
       },
       {
         name: 'direccion',
         label: 'Dirección',
         type: 'text',
         placeholder: 'Av. Las Gardenias 123',
-        group: 'Contacto y Redes',
+        group: 'Documentación y Residencia',
       },
       {
         name: 'distrito',
         label: 'Distrito',
         type: 'text',
         placeholder: 'Miraflores',
-        group: 'Contacto y Redes',
+        group: 'Documentación y Residencia',
+      },
+      {
+        name: 'ciudad',
+        label: 'Ciudad',
+        type: 'text',
+        placeholder: 'Lima',
+        group: 'Documentación y Residencia',
+      },
+      {
+        name: 'pais',
+        label: 'País',
+        type: 'text',
+        placeholder: 'Perú',
+        group: 'Documentación y Residencia',
       },
       {
         name: 'codigo_postal',
         label: 'Código Postal',
         type: 'text',
         placeholder: '15047',
-        group: 'Contacto y Redes',
-      },
-      {
-        name: 'linkedin_url',
-        label: 'LinkedIn URL',
-        type: 'url',
-        placeholder: 'https://linkedin.com/in/tuperfil',
-        group: 'Contacto y Redes',
-      },
-      {
-        name: 'social_networks',
-        label: 'Otras Redes Social',
-        type: 'text',
-        placeholder: 'GitHub, Portafolio, etc.',
-        group: 'Contacto y Redes',
+        group: 'Documentación y Residencia',
       },
     ],
   },

@@ -9,6 +9,10 @@ interface CollapsibleSectionProps {
   children: ReactNode;
 }
 
+import { Card, CardContent } from './ui/card';
+
+// ... (interface remains same)
+
 export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
   section,
   isOpen,
@@ -17,32 +21,32 @@ export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
   children
 }) => {
   return (
-    <div className={`card mb-4 transition-all duration-300 ${isOpen ? 'border-l-4 border-accent-violet' : 'border-l-4 border-transparent'}`}>
+    <Card className={`mb-3 transition-all duration-300 border-l-4 ${isOpen ? 'border-l-accent-violet' : 'border-l-transparent'}`}>
       <div 
-        className="flex items-center justify-between cursor-pointer py-2"
+        className="flex items-center justify-between cursor-pointer py-4 px-6"
         onClick={onToggle}
       >
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{section.icon}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{section.icon}</span>
           <div>
-            <h3 className="text-lg font-semibold m-0">{section.title}</h3>
+            <h3 className="text-base font-semibold m-0">{section.title}</h3>
             {!isOpen && (
-              <p className="text-xs text-text-secondary m-0">
+              <p className="text-[10px] text-text-secondary m-0">
                 Click para editar
               </p>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+        <div className="flex items-center gap-3">
+          <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
             completion.completed === completion.total 
               ? 'bg-green-500/20 text-green-400' 
               : 'bg-bg-tertiary text-text-secondary'
           }`}>
             {completion.completed}/{completion.total}
           </div>
-          <div className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+          <div className={`text-[10px] opacity-40 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
             ▼
           </div>
         </div>
@@ -50,13 +54,15 @@ export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
       
       <div 
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="pt-2 pb-1 border-t border-bg-tertiary">
-          {children}
-        </div>
+        <CardContent className="pt-0 pb-6 px-6 border-t border-bg-tertiary/50">
+          <div className="pt-4">
+             {children}
+          </div>
+        </CardContent>
       </div>
-    </div>
+    </Card>
   );
 };

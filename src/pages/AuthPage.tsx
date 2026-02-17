@@ -52,18 +52,18 @@ export const AuthPage: FC = () => {
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-accent-cyan opacity-20 blur-[100px] rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      <div className="card glass z-10 w-full max-w-md mx-4 text-center p-8 backdrop-blur-md border border-white/5">
-        <div className="mb-8 relative">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-accent-gradient flex items-center justify-center shadow-glow">
-            <span className="text-3xl">⚡</span>
+      <div className="card glass z-10 w-full max-w-sm mx-4 text-center p-6 backdrop-blur-md border border-white/5">
+        <div className="mb-6 relative">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-accent-gradient flex items-center justify-center shadow-glow">
+            <span className="text-2xl">⚡</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">
+          <h1 className="text-3xl font-bold mb-1 tracking-tight">
             Auto<span className="gradient-text">Solve</span>
           </h1>
-          <p className="text-text-secondary text-lg">
+          <p className="text-text-secondary text-sm">
             Tu asistente de formularios ya está instalado.
             <br />
-            <span className="text-sm opacity-80">Solo falta un paso.</span>
+            <span className="text-[10px] opacity-80 uppercase tracking-widest font-black">Solo falta un paso.</span>
           </p>
         </div>
 
