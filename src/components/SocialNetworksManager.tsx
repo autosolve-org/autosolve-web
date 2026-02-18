@@ -13,7 +13,7 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { InfoIcon } from 'lucide-react';
 
-interface SocialNetwork {
+export interface SocialNetwork {
   platform: string;
   url: string;
 }

@@ -21,42 +21,24 @@ export type ProfileSection = {
 
 export const profileSections: ProfileSection[] = [
   {
-    id: 'personal_info',
-    title: 'Información Personal',
+    id: 'identity',
+    title: 'Identidad',
     icon: '👤',
     required: true,
     fields: [
-      // Grupo 1: Identidad y Contacto
       {
-        name: 'nombre',
+        name: 'first_name',
         label: 'Nombres',
         type: 'text',
         placeholder: 'Juan Román',
         required: true,
-        group: 'Identidad',
       },
       {
-        name: 'apellido',
+        name: 'last_name',
         label: 'Apellidos',
         type: 'text',
         placeholder: 'Pérez García',
         required: true,
-        group: 'Identidad',
-      },
-      {
-        name: 'apodo',
-        label: 'Apodo / Nickname',
-        type: 'text',
-        placeholder: '@juanroman',
-        group: 'Identidad',
-      },
-      {
-        name: 'bio',
-        label: 'Biografia',
-        type: 'textarea',
-        placeholder: 'Desarrollador apasionado con más de 5 años...',
-        group: 'Identidad',
-        maxLength: 500,
       },
       {
         name: 'email',
@@ -64,78 +46,80 @@ export const profileSections: ProfileSection[] = [
         type: 'email',
         placeholder: 'juan@ejemplo.com',
         required: true,
-        group: 'Identidad',
       },
       {
-        name: 'telefono',
+        name: 'phone_number',
         label: 'Teléfono Móvil',
         type: 'tel',
         placeholder: '+51 987 654 321',
-        group: 'Identidad',
       },
       {
-        name: 'social_networks',
+        name: 'bio',
+        label: 'Biografia',
+        type: 'textarea',
+        placeholder: 'Desarrollador apasionado con más de 5 años...',
+        maxLength: 500,
+      },
+      {
+        name: 'social_links',
         label: 'Redes Sociales',
         type: 'social',
         placeholder: 'Agrega tus redes profesionales',
-        group: 'Identidad',
       },
-      // Grupo 2: Documentación y Ubicación
       {
-        name: 'dni',
+        name: 'national_id',
         label: 'DNI / Documento',
         type: 'text',
         placeholder: '12345678',
-        required: true,
-        group: 'Documentación y Residencia',
       },
       {
-        name: 'genero',
+        name: 'gender',
         label: 'Género',
         type: 'select',
         options: ['Masculino', 'Femenino', 'No binario', 'Prefiero no decirlo'],
-        group: 'Documentación y Residencia',
       },
       {
-        name: 'fecha_nacimiento',
+        name: 'birth_date',
         label: 'Fecha de Nacimiento',
         type: 'date',
-        group: 'Documentación y Residencia',
       },
+    ],
+  },
+  {
+    id: 'location',
+    title: 'Ubicación',
+    icon: '📍',
+    required: true,
+    fields: [
       {
-        name: 'direccion',
+        name: 'address',
         label: 'Dirección',
         type: 'text',
         placeholder: 'Av. Las Gardenias 123',
-        group: 'Documentación y Residencia',
       },
       {
-        name: 'distrito',
+        name: 'district',
         label: 'Distrito',
         type: 'text',
         placeholder: 'Miraflores',
-        group: 'Documentación y Residencia',
       },
       {
-        name: 'ciudad',
+        name: 'city',
         label: 'Ciudad',
         type: 'text',
         placeholder: 'Lima',
-        group: 'Documentación y Residencia',
       },
       {
-        name: 'pais',
+        name: 'country',
         label: 'País',
         type: 'text',
         placeholder: 'Perú',
-        group: 'Documentación y Residencia',
       },
       {
-        name: 'codigo_postal',
+        name: 'postal_code',
         label: 'Código Postal',
         type: 'text',
         placeholder: '15047',
-        group: 'Documentación y Residencia',
       },
     ],
   },
@@ -146,19 +130,19 @@ export const profileSections: ProfileSection[] = [
     required: false,
     fields: [
       {
-        name: 'profesion',
+        name: 'profession',
         label: 'Profesión Actual',
         type: 'text',
         placeholder: 'Ingeniero de Software Senior',
       },
       {
-        name: 'empresa',
+        name: 'company',
         label: 'Empresa Actual',
         type: 'text',
         placeholder: 'Google / Freelance',
       },
       {
-        name: 'cargo',
+        name: 'job_title',
         label: 'Cargo / Rol',
         type: 'text',
         placeholder: 'Frontend Developer',
@@ -190,13 +174,13 @@ export const profileSections: ProfileSection[] = [
     required: false,
     fields: [
       {
-        name: 'universidad',
+        name: 'university',
         label: 'Institución / Universidad',
         type: 'text',
         placeholder: 'Universidad Nacional Mayor de San Marcos',
       },
       {
-        name: 'carrera',
+        name: 'degree',
         label: 'Carrera / Especialidad',
         type: 'text',
         placeholder: 'Ingeniería de Sistemas',
@@ -260,13 +244,14 @@ export function calculateOverallCompletion(
 export function areRequiredFieldsComplete(
   profileData: Record<string, unknown>
 ): boolean {
-  const requiredSection = profileSections.find((s) => s.required);
-  if (!requiredSection) return true;
-
-  return requiredSection.fields
-    .filter((f) => f.required)
-    .every((field) => {
-      const value = profileData[field.name];
-      return value !== undefined && value !== null && value !== '';
-    });
+  return profileSections
+    .filter((s) => s.required)
+    .every((section) => 
+      section.fields
+        .filter((f) => f.required)
+        .every((field) => {
+          const value = profileData[field.name];
+          return value !== undefined && value !== null && value !== '';
+        })
+    );
 }

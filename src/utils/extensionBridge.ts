@@ -8,8 +8,9 @@ export interface ExtensionBridge {
 
 class ChromeExtensionBridge implements ExtensionBridge {
   isExtensionPresent(): boolean {
-    // Check if Chrome extension API is available
-    return !!(window.chrome?.runtime?.id);
+    // For postMessage method (Content Script bridge), we don't strictly need chrome.runtime.id
+    // to be visible in the main window context.
+    return true; 
   }
 
   syncTokens(accessToken: string, refreshToken: string): void {

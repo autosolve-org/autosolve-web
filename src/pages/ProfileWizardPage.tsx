@@ -1,66 +1,54 @@
 import { useState, useEffect, type FC } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { 
-  profileSections, 
-  calculateOverallCompletion, 
-  areRequiredFieldsComplete,
-  type ProfileField
+import {
+  profileSections,
+  calculateOverallCompletion
 } from '../utils/profileFields';
 import { api } from '../services/api';
+import { profileService } from '../services/profile.service';
 
 // Components
-import { CVUploader } from '../components/CVUploader';
-import { 
-  Sparkles, Save, CheckCircle2, ChevronDown, ChevronUp, User, Briefcase, GraduationCap, 
-  Calendar as CalendarIcon 
+import {
+  CheckCircle2,
+  User,
+  Briefcase,
+  GraduationCap,
+  MapPin
 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
-// Shadcn UI Components
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Button } from '../components/ui/button';
-import { Calendar } from '../components/ui/calendar';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../components/ui/popover';
-import { SocialNetworksManager } from '../components/SocialNetworksManager';
-import { PhoneInput } from '../components/ui/phone-input';
+// New Components
+import { ProfileForm } from '../components/profile-wizard/ProfileForm';
+import { ProfileWizardSidebar } from '../components/profile-wizard/ProfileWizardSidebar';
 
 export const ProfileWizardPage: FC = () => {
   const { user, updateUser } = useAuth();
-  const navigate = useNavigate();
-  
+
   // State
   const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [originalData, setOriginalData] = useState<Record<string, unknown>>({});
+  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [completion, setCompletion] = useState(0);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(profileSections[0].id);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Identidad': true,
-    'Documentación y Residencia': false
+    'Ubicación': true
   });
+  const [isLocating, setIsLocating] = useState(false);
 
   // Load initial data
   useEffect(() => {
     async function loadProfile() {
       if (!user?.id) return;
       try {
-        const initialData = { ...user };
+        let initialData = { ...user };
+        const profile = await profileService.getActiveProfile();
+        if (profile) {
+            initialData = { ...initialData, ...profile };
+        }
         setFormData(initialData);
+        setOriginalData(initialData);
       } catch (error) {
         console.error('Error loading profile:', error);
       }
@@ -71,33 +59,40 @@ export const ProfileWizardPage: FC = () => {
   // Update completion percentage
   useEffect(() => {
     setCompletion(calculateOverallCompletion(formData));
-  }, [formData]);
 
-  const handleFieldChange = (name: string, value: string | any[]) => {
-    // ... function content remains same, just update signature if needed
-    // But actually TS complains about 'any' in previous snippet, let's fix strictly if we can
-    // or just leave it since I am not changing function body here
-    setFormData(prev => {
-      const newData = { ...prev, [name]: value };
-      
-      // Auto-save logic (debounced)
-      const win = window as unknown as { saveTimeout: number | undefined };
-      if (win.saveTimeout) clearTimeout(win.saveTimeout);
-      win.saveTimeout = window.setTimeout(() => {
-        saveProfile(newData, true);
-      }, 2000);
-      
-      return newData;
-    });
+    const hasChanged = () => {
+        const allKeys = new Set([...Object.keys(formData), ...Object.keys(originalData)]);
+        for (const key of allKeys) {
+            const val1 = formData[key];
+            const val2 = originalData[key];
+            if (val1 === val2) continue;
+            const v1 = (val1 === null || val1 === undefined) ? '' : val1;
+            const v2 = (val2 === null || val2 === undefined) ? '' : val2;
+            if (v1 === v2) continue;
+            if (typeof v1 === 'object' && typeof v2 === 'object') {
+                if (JSON.stringify(v1) !== JSON.stringify(v2)) return true;
+                continue;
+            }
+            return true;
+        }
+        return false;
+    };
+
+    setHasChanges(hasChanged());
+  }, [formData, originalData]);
+
+  const handleFieldChange = (name: string, value: unknown) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const saveProfile = async (data: Record<string, unknown>, silent = false) => {
     if (!user?.id) return;
     if (!silent) setIsSaving(true);
-    
     try {
-      await api.put(`/users/profiles/${user.id}`, data);
+      const profileId = (data.id as string) || user.id;
+      await api.put(`/users/profiles/${profileId}`, data);
       updateUser(data);
+      setOriginalData(data);
       if (!silent) {
         setShowSaveSuccess(true);
         setTimeout(() => setShowSaveSuccess(false), 3000);
@@ -110,20 +105,79 @@ export const ProfileWizardPage: FC = () => {
   };
 
   const handleCVUpload = (parsedData: Record<string, unknown>) => {
-    const newData = { ...formData, ...parsedData };
+    const keyMap: Record<string, string> = {
+      'nombre': 'first_name',
+      'apellido': 'last_name',
+      'telefono': 'phone_number',
+      'profesion': 'profession',
+      'empresa': 'company',
+      'cargo': 'job_title',
+      'universidad': 'university',
+      'carrera': 'degree',
+      'ciudad': 'city',
+      'pais': 'country',
+      'bio': 'bio',
+      'skills': 'skills',
+    };
+
+    const updates: Record<string, unknown> = {};
+    Object.entries(parsedData).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === '') return;
+      const mappedKey = keyMap[key] || key;
+      updates[mappedKey] = value;
+    });
+
+    const newData = { ...formData, ...updates };
     setFormData(newData);
     saveProfile(newData);
+  };
+
+  const handleDetectLocation = async () => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          const addr = data.address;
+
+          if (addr) {
+            const updates: Record<string, string> = {};
+            if (addr.country) updates.country = addr.country;
+            if (addr.city || addr.town || addr.village || addr.state) updates.city = addr.city || addr.town || addr.village || addr.state;
+            if (addr.suburb || addr.neighbourhood || addr.city_district) updates.district = addr.suburb || addr.neighbourhood || addr.city_district;
+            if (addr.postcode) updates.postal_code = addr.postcode;
+            if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
+
+            const newData = { ...formData, ...updates };
+            setFormData(newData);
+            saveProfile(newData, true);
+          }
+        } catch (error) {
+          console.error("Error detecting location:", error);
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLocating(false);
+      }
+    );
   };
 
   const handleSubmit = async () => {
     if (!user?.id) return;
     setIsSaving(true);
-    
     try {
       await api.patch('/users/me', { onboarding_completed: true });
-      await saveProfile(formData, true);
+      await saveProfile(formData, false);
       updateUser({ onboarding_completed: true });
-      navigate('/welcome');
     } catch (error) {
       console.error('Error completing profile:', error);
     } finally {
@@ -131,50 +185,26 @@ export const ProfileWizardPage: FC = () => {
     }
   };
 
-  const activeSection = profileSections.find(s => s.id === activeSectionId) || profileSections[0];
-
   const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => {
-      const isOpening = !prev[group];
-      const newState = { ...prev };
-
-      if (isOpening) {
-        // Close other groups in this section
-        const currentSectionGroups = Array.from(new Set(activeSection.fields.map(f => f.group || 'General')));
-        currentSectionGroups.forEach(g => {
-          if (g !== group) newState[g] = false;
-        });
-        newState[group] = true;
-      } else {
-        newState[group] = false;
-      }
-      
-      return newState;
-    });
+    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  // Group fields if section has groups
-  const groupedFields: Record<string, ProfileField[]> = {};
-  activeSection.fields.forEach(field => {
-    const groupName = field.group || 'General';
-    if (!groupedFields[groupName]) groupedFields[groupName] = [];
-    groupedFields[groupName].push(field);
-  });
-
-  // Map icon strings to components for the sidebar navigation
   const getSidebarIcon = (id: string, isActive: boolean) => {
     const props = { className: `w-4 h-4 ${isActive ? 'text-white' : 'text-text-muted transition-colors'}` };
     switch (id) {
-      case 'personal_info': return <User {...props} />;
+      case 'identity': return <User {...props} />;
+      case 'location': return <MapPin {...props} />;
       case 'experience': return <Briefcase {...props} />;
       case 'education': return <GraduationCap {...props} />;
       default: return <User {...props} />;
     }
   };
 
+  const activeSection = profileSections.find(s => s.id === activeSectionId) || profileSections[0];
+
   return (
     <div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 h-6">
         {showSaveSuccess && (
           <span className="text-green-400 text-sm flex items-center gap-2 animate-fade-in">
             <CheckCircle2 className="w-4 h-4" /> Guardado
@@ -183,250 +213,31 @@ export const ProfileWizardPage: FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column: Form Content */}
         <div className="lg:col-span-2 space-y-6">
-          <section className="card bg-bg-primary p-0 rounded-xl border border-white/10 animate-scale-in overflow-hidden shadow-2xl shadow-black/20">
-            {/* Form Header with background */}
-
-            <div className="p-6 border-b border-white/5 bg-white/5">
-              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 select-none mb-4">
-                Datos del Usuario
-              </h1>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent-violet/10 flex items-center justify-center border border-accent-violet/20 text-2xl shadow-inner shadow-accent-violet/5">
-                  {activeSection.icon}
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white tracking-tight">{activeSection.title}</h2>
-                  <p className="text-xs text-text-secondary mt-0.5">
-                    {activeSection.required ? 'Información necesaria para tu perfil profesional.' : 'Completa estos campos para mejorar tu perfil.'}
-                  </p>
-                </div>
-                {activeSection.required && (
-                  <span className="text-[9px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full border border-red-500/20 font-black ml-auto tracking-widest">
-                    Requerido
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Form Body: Transparent & Seamless Groups */}
-            <div className="space-y-0">
-              {Object.entries(groupedFields).map(([groupName, fields], idx, arr) => {
-                const isExpanded = expandedGroups[groupName] ?? true;
-                const hasGroups = Object.keys(groupedFields).length > 1;
-                const isLast = idx === arr.length - 1;
-
-                return (
-                  <div key={groupName} className={`${hasGroups ? `${!isLast ? 'border-b' : ''} border-white/5 bg-transparent` : ''}`}>
-                    {hasGroups && (idx === 0 || expandedGroups[groupName] !== undefined) && (
-                      <button 
-                        onClick={() => toggleGroup(groupName)}
-                        className={`w-full px-6 py-4 flex items-center justify-between transition-all group/btn ${isExpanded ? 'bg-white/5' : 'hover:bg-white/10'}`}
-                      >
-                        <h3 className="text-xs font-bold text-white tracking-[0.2em] flex items-center gap-3">
-                           <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isExpanded ? 'bg-accent-violet shadow-[0_0_8px_rgba(139,92,246,0.6)]' : 'bg-white/10'}`} />
-                           {groupName}
-                        </h3>
-                        <div className={`p-1 rounded-md transition-colors ${isExpanded ? 'bg-accent-violet/10 text-accent-violet' : 'text-text-muted group-hover/btn:text-white'}`}>
-                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </div>
-                      </button>
-                    )}
-                    
-                    {(isExpanded || !hasGroups) && (
-                      <div className={`p-6 animate-fade-in ${(idx > 0 && isExpanded && hasGroups) ? 'border-t border-white/5' : ''} grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6`}>
-                        {fields.map((field) => (
-                          <div key={field.name} className={`${(field.type === 'textarea' || field.type === 'social') ? 'md:col-span-2' : ''} group/field space-y-2`}>
-                            <label className="text-[11px] font-bold uppercase tracking-wider text-text-muted group-focus-within/field:text-accent-violet transition-colors flex items-center gap-1">
-                              {field.label} {field.required && <span className="text-accent-cyan">*</span>}
-                            </label>
-                            
-                            {field.type === 'textarea' ? (
-                              <div className="relative group/textarea">
-                                <Textarea
-                                  className="bg-bg-tertiary/50 border-white/10 min-h-[120px] focus:border-accent-violet/50 resize-y pb-8"
-                                  placeholder={field.placeholder}
-                                  value={(formData[field.name] as string) || ''}
-                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleFieldChange(field.name, e.target.value)}
-                                  maxLength={field.maxLength || 500}
-                                />
-                                <div className="absolute bottom-2 right-2 flex items-center justify-end gap-2 pointer-events-none">
-                                  <span className="text-[10px] text-text-muted bg-bg-elevated/80 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/5">
-                                    {((formData[field.name] as string) || '').length} / {field.maxLength || 500}
-                                  </span>
-                                </div>
-                              </div>
-                            ) : field.type === 'select' ? (
-                              <Select
-                                value={(formData[field.name] as string) || ''}
-                                onValueChange={(val) => handleFieldChange(field.name, val)}
-                              >
-                                <SelectTrigger className="bg-bg-tertiary/50 border-white/10 text-text-primary focus:ring-accent-violet/20">
-                                  <SelectValue placeholder={field.placeholder || "Seleccionar"} />
-                                </SelectTrigger>
-                                <SelectContent className="bg-bg-elevated border-white/10 text-text-primary">
-                                  {field.options?.map(opt => (
-                                    <SelectItem key={opt} value={opt} className="focus:bg-bg-tertiary focus:text-accent-violet cursor-pointer">
-                                      {opt}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : field.type === 'date' ? (
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal bg-bg-tertiary/50 border-white/10 hover:bg-bg-tertiary hover:text-white",
-                                      !formData[field.name] && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {formData[field.name] ? format(new Date(formData[field.name] as string), "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 bg-bg-elevated border-white/10" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={formData[field.name] ? new Date(formData[field.name] as string) : undefined}
-                                    onSelect={(date) => handleFieldChange(field.name, date?.toISOString() || '')}
-                                    initialFocus
-                                    className="p-3 pointer-events-auto"
-                                    classNames={{
-                                      day_selected: "bg-accent-violet text-white hover:bg-accent-violet hover:text-white focus:bg-accent-violet focus:text-white",
-                                      day_today: "bg-white/10 text-white",
-                                      day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-white/10 rounded-md transition-colors text-white",
-                                      head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-                                    }}
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                            ) : field.type === 'social' ? (
-                              <SocialNetworksManager 
-                                value={(formData[field.name] as any) || []}
-                                onChange={(val) => handleFieldChange(field.name, val)}
-                              />
-                            ) : field.type === 'tel' ? (
-                               <PhoneInput 
-                                  value={(formData[field.name] as string) || ''}
-                                  onChange={(val) => handleFieldChange(field.name, val)}
-                                  placeholder={field.placeholder}
-                                  className="bg-bg-tertiary/50 border-white/10 focus:border-accent-violet/50 h-10"
-                               />
-                            ) : (
-                              <Input
-                                type={field.type}
-                                className="bg-bg-tertiary/50 border-white/10 focus:border-accent-violet/50"
-                                placeholder={field.placeholder}
-                                value={(formData[field.name] as string) || ''}
-                                onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          <ProfileForm
+            activeSection={activeSection}
+            formData={formData}
+            onFieldChange={handleFieldChange}
+            expandedGroups={expandedGroups}
+            onToggleGroup={toggleGroup}
+            isLocating={isLocating}
+            onDetectLocation={handleDetectLocation}
+          />
         </div>
 
-        {/* Right Column: Only Navigation Mode */}
-        <div className="space-y-6 lg:sticky lg:top-8 h-fit">
-          
-          <div className="card bg-bg-primary p-0 rounded-xl border border-white/5 overflow-hidden shadow-2xl shadow-black/40">
-
-            <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
-               <h3 className="font-semibold text-white text-[10px] tracking-[0.2em] opacity-70">Progreso de Formularios</h3>
-               <div className="flex items-center gap-2 bg-bg-elevated/50 px-2 py-1 rounded-full border border-white/5">
-                  <span className={`text-[10px] font-mono font-bold ${completion === 100 ? 'text-green-400' : 'text-accent-cyan'}`}>
-                    {completion}%
-                  </span>
-               </div>
-            </div>
-            <div className="p-4 space-y-0 relative">
-                {profileSections.map((section, idx) => {
-                  const isLast = idx === profileSections.length - 1;
-                  const isActive = section.id === activeSectionId;
-                  return (
-                    <div key={section.id} className="flex gap-4 relative group/step">
-                        <div className="flex flex-col items-center">
-                            <button 
-                              onClick={() => setActiveSectionId(section.id)}
-                              className={`w-9 h-9 rounded-xl border transition-all z-10 cursor-pointer flex items-center justify-center
-                                ${isActive 
-                                  ? 'bg-accent-violet border-accent-violet text-white shadow-glow scale-105' 
-                                  : 'bg-bg-elevated border-white/10 text-text-muted hover:border-accent-violet/40 hover:bg-accent-violet/5'
-                                }
-                              `}
-                            >
-                                {getSidebarIcon(section.id, isActive)}
-                            </button>
-                            {!isLast && <div className={`w-0.5 h-full -my-1 transition-colors duration-500 ${isActive ? 'bg-accent-violet/40' : 'bg-white/5'}`} />}
-                        </div>
-                        <div className="flex-1 pb-3 border-b border-white/5">
-                            <div className="flex justify-between items-start mt-1">
-                                <button
-                                  onClick={() => setActiveSectionId(section.id)}
-                                  className={`text-sm font-bold transition-all text-left tracking-tight
-                                    ${isActive ? 'text-white translate-x-1' : 'text-text-secondary group-hover/step:text-white'}
-                                  `}
-                                >
-                                  {section.title}
-                                </button>
-                            </div>
-                            <p className={`text-[10px] mt-1 leading-relaxed transition-opacity duration-300 ${isActive ? 'opacity-100 text-accent-violet font-medium' : 'opacity-60 text-text-muted'}`}>
-                              {section.required ? 'Campos Requeridos' : 'Información Opcional'}
-                            </p>
-                        </div>
-                    </div>
-                  );
-                })}
-
-                {/* Finalize Button Area */}
-                <div className="relative z-10">
-                     <button
-                      onClick={handleSubmit}
-                      disabled={isSaving || !areRequiredFieldsComplete(formData)}
-                      className="w-full py-3 px-4 bg-accent-violet hover:bg-accent-violet/90 text-white text-xs font-black rounded-xl border border-white/10 transition-all flex items-center justify-center gap-2 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed tracking-widest group/save active:scale-95 shadow-lg shadow-accent-violet/20"
-                    >
-                      <Save className="w-5 h-5 group-hover/save:scale-110 transition-transform" />
-                      {isSaving ? 'Guardando...' : 'Guardar Cambios'}
-                    </button>
-                </div>
-            </div>
-          </div>
-
-          {/* CV Import Card */}
-          <div className="card bg-bg-secondary p-5 rounded-xl border border-white/10 border-dashed relative overflow-hidden group hover:border-accent-cyan/40 transition-all duration-500 shadow-lg">
-            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Sparkles className="w-24 h-24 text-accent-cyan transform rotate-12" />
-            </div>
-            
-            <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2.5 rounded-lg bg-accent-cyan/10 border border-accent-cyan/20">
-                       <Sparkles className="w-4 h-4 text-accent-cyan" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-sm">IA Autocomplete</h3>
-                    <p className="text-[10px] text-accent-cyan font-medium tracking-tighter">Magic Feature</p>
-                  </div>
-                </div>
-                <p className="text-xs text-text-secondary mb-5 leading-relaxed">
-                  ¿Tienes prisa? Sube tu CV y nuestra IA lo completará por ti en segundos.
-                </p>
-                <CVUploader onUploadSuccess={handleCVUpload} />
-            </div>
-          </div>
-
-        </div>
+        <ProfileWizardSidebar
+          activeSectionId={activeSectionId}
+          setActiveSectionId={setActiveSectionId}
+          completion={completion}
+          isSaving={isSaving}
+          hasChanges={hasChanges}
+          formData={formData}
+          handleCVUpload={handleCVUpload}
+          handleSubmit={handleSubmit}
+          getSidebarIcon={getSidebarIcon}
+        />
       </div>
     </div>
   );
 };
+
