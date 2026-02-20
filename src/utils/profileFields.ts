@@ -54,29 +54,10 @@ export const profileSections: ProfileSection[] = [
         placeholder: '+51 987 654 321',
       },
       {
-        name: 'bio',
-        label: 'Biografia',
-        type: 'textarea',
-        placeholder: 'Desarrollador apasionado con más de 5 años...',
-        maxLength: 500,
-      },
-      {
-        name: 'social_links',
-        label: 'Redes Sociales',
-        type: 'social',
-        placeholder: 'Agrega tus redes profesionales',
-      },
-      {
         name: 'national_id',
         label: 'DNI / Documento',
         type: 'text',
         placeholder: '12345678',
-      },
-      {
-        name: 'gender',
-        label: 'Género',
-        type: 'select',
-        options: ['Masculino', 'Femenino', 'No binario', 'Prefiero no decirlo'],
       },
       {
         name: 'birth_date',
@@ -159,12 +140,6 @@ export const profileSections: ProfileSection[] = [
         type: 'text',
         placeholder: 'React, Node.js, Cloud',
       },
-      {
-        name: 'hobbies',
-        label: 'Hobbies',
-        type: 'text',
-        placeholder: 'Trekking, Fotografía',
-      },
     ],
   },
   {
@@ -184,12 +159,6 @@ export const profileSections: ProfileSection[] = [
         label: 'Carrera / Especialidad',
         type: 'text',
         placeholder: 'Ingeniería de Sistemas',
-      },
-      {
-        name: 'student_code',
-        label: 'Código de Estudiante',
-        type: 'text',
-        placeholder: '14200123',
       },
       {
         name: 'start_date',

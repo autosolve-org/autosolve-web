@@ -19,6 +19,8 @@ import {
 // New Components
 import { ProfileForm } from '../components/profile-wizard/ProfileForm';
 import { ProfileWizardSidebar } from '../components/profile-wizard/ProfileWizardSidebar';
+import { KnowledgeManager, type KnowledgePattern } from '../components/KnowledgeManager';
+import { Sparkles } from 'lucide-react';
 
 export const ProfileWizardPage: FC = () => {
   const { user, updateUser } = useAuth();
@@ -223,6 +225,29 @@ export const ProfileWizardPage: FC = () => {
             isLocating={isLocating}
             onDetectLocation={handleDetectLocation}
           />
+          
+          <div className="bg-bg-secondary/30 p-6 rounded-2xl border border-white/5 space-y-6 backdrop-blur-sm relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1 h-full bg-accent-cyan/50" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-accent-cyan/10">
+                <Sparkles className="w-5 h-5 text-accent-cyan" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                  Base de Conocimientos (IA)
+                </h3>
+                <p className="text-xs text-text-muted">Añade patrones, links o datos extras para mejorar el autocompletado.</p>
+              </div>
+            </div>
+
+            <KnowledgeManager 
+              value={((formData.data as Record<string, unknown>)?.knowledge_base as KnowledgePattern[]) || []}
+              onChange={(val) => {
+                const currentData = (formData.data as Record<string, unknown>) || {};
+                handleFieldChange('data', { ...currentData, knowledge_base: val });
+              }}
+            />
+          </div>
         </div>
 
         <ProfileWizardSidebar

@@ -22,7 +22,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '../ui/popover';
-import { SocialNetworksManager, type SocialNetwork } from '../SocialNetworksManager';
 import { PhoneInput } from '../ui/phone-input';
 
 interface ProfileFieldProps {
@@ -101,11 +100,6 @@ export const ProfileField: FC<ProfileFieldProps> = ({ field, value, onChange }) 
             />
           </PopoverContent>
         </Popover>
-      ) : field.type === 'social' ? (
-        <SocialNetworksManager 
-          value={(value as SocialNetwork[]) || []}
-          onChange={(val) => onChange(field.name, val)}
-        />
       ) : field.type === 'tel' ? (
          <PhoneInput 
             value={(value as string) || ''}
