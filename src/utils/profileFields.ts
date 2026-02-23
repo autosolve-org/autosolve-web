@@ -13,7 +13,7 @@ export type ProfileField = {
 
 export type ProfileSection = {
   id: string;
-  title: string;
+  description: string;
   icon: string;
   fields: ProfileField[];
   required: boolean;
@@ -22,7 +22,7 @@ export type ProfileSection = {
 export const profileSections: ProfileSection[] = [
   {
     id: 'identity',
-    title: 'Identidad',
+    description: 'Datos personales básicos y métodos de contacto directo.',
     icon: '👤',
     required: true,
     fields: [
@@ -68,7 +68,7 @@ export const profileSections: ProfileSection[] = [
   },
   {
     id: 'location',
-    title: 'Ubicación',
+    description: 'Información geográfica y de residencia actual para postulaciones.',
     icon: '📍',
     required: true,
     fields: [
@@ -106,7 +106,7 @@ export const profileSections: ProfileSection[] = [
   },
   {
     id: 'experience',
-    title: 'Experiencia',
+    description: 'Historial laboral, roles desempeñados y resumen de habilidades profesionales.',
     icon: '💼',
     required: false,
     fields: [
@@ -144,7 +144,7 @@ export const profileSections: ProfileSection[] = [
   },
   {
     id: 'education',
-    title: 'Educación',
+    description: 'Formación académica, instituciones, grados obtenidos y certificaciones.',
     icon: '🎓',
     required: false,
     fields: [

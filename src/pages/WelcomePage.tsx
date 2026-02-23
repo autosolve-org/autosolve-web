@@ -1,73 +1,86 @@
 import { type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Terminal } from 'lucide-react';
 
 export const WelcomePage: FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <div className="bg-bg-primary p-6">
-      <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⚡</span>
-            <span className="text-lg font-bold">AutoSolve</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] uppercase font-black tracking-widest text-text-muted">
+    <div className="font-mono text-[13px] animate-fade-in space-y-6">
+      <header className="flex justify-between items-center bg-bg-primary/90 p-4 border border-white/10 rounded-xl">
+         <div className="flex items-center gap-3 text-white/40 font-bold uppercase tracking-[0.2em] text-[11px]">
+            <Terminal className="w-4 h-4 text-accent-cyan" /> 
+            AutoSolve <span className="text-white/20">v1.0.0</span>
+         </div>
+         <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase font-black tracking-widest text-text-muted hidden sm:inline">
               {user?.email}
             </span>
-            <div className="w-7 h-7 rounded-lg bg-accent-gradient flex items-center justify-center text-xs font-black shadow-glow">
+            <div className="w-7 h-7 rounded bg-accent-violet/20 flex items-center justify-center text-xs font-black text-accent-violet border border-accent-violet/30">
               {user?.nombre?.[0] || 'U'}
             </div>
-          </div>
-        </header>
+         </div>
+      </header>
 
-        <main className="animate-slide-up">
-          <div className="card glass text-center py-12 mb-6 border-accent-violet/20 shadow-glow">
-            <div className="text-5xl mb-4">🎉</div>
-            <h1 className="text-2xl font-bold mb-2">
-              ¡Todo listo! AutoSolve está configurado
-            </h1>
-            <p className="text-sm text-text-secondary max-w-md mx-auto mb-6">
-              Ya puedes ir a cualquier formulario de postulación y verás la magia en acción.
-              La extensión detectará los campos y te sugerirá las mejores respuestas.
-            </p>
-            
-            <div className="flex justify-center gap-3">
+      <div className="bg-bg-primary/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden relative">
+        <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center gap-2 select-none">
+          <div className="flex gap-2 mr-4">
+            <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+          </div>
+          <div className="text-white/30 text-[11px] uppercase tracking-[0.2em] font-sans font-bold">
+             welcome.md
+          </div>
+        </div>
+
+        <div className="p-6 md:p-8 space-y-8">
+           <div>
+              <div className="text-white/20 select-none mb-4 flex items-center gap-2">
+                <span className="text-accent-violet">#</span> System_Status
+              </div>
+              <div className="text-green-400 font-bold flex items-center gap-2 mb-2">
+                 [OK] AutoSolve initialized successfully.
+              </div>
+              <p className="text-white/60 leading-relaxed max-w-2xl">
+                 La extensión está activa y lista. Cuando visites cualquier formulario, detectará automáticamente los campos y te sugerirá las respuestas en base a tu perfil local configurado en la extensión, manteniendo completa privacidad y fricción casi nula.
+              </p>
+           </div>
+
+           <div className="flex flex-wrap gap-4 pt-4 border-t border-white/5">
               <button 
                 onClick={() => navigate('/profile')}
-                className="btn btn-secondary px-4"
+                className="py-2.5 px-5 bg-white/5 hover:bg-white/10 text-white rounded transition-colors flex items-center gap-2 border border-white/10"
               >
-                Editar mi perfil
+                <span className="text-accent-violet font-bold">{'>'}</span> ./edit_profile.sh
               </button>
-              <a 
-                href="#" 
-                className="btn btn-primary px-4"
+              <button 
+                className="py-2.5 px-5 bg-accent-cyan/10 hover:bg-accent-cyan/20 text-accent-cyan rounded transition-colors flex items-center gap-2 border border-accent-cyan/20 font-bold"
                 onClick={(e) => e.preventDefault()}
               >
-                Probar en un formulario
-              </a>
-            </div>
-          </div>
+                <span className="text-white/40">$</span> test_demo_form
+              </button>
+           </div>
+        </div>
+      </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="card border-transparent hover:border-white/10 p-5">
-              <h3 className="text-sm font-bold mb-1 opacity-80 uppercase tracking-wider">📊 Estadísticas</h3>
-              <p className="text-text-muted text-[11px] leading-relaxed">
-                Pronto podrás ver cuántos formularios has completado y cuánto tiempo has ahorrado.
-              </p>
-            </div>
-            <div className="card border-transparent hover:border-white/10 p-5">
-              <h3 className="text-sm font-bold mb-1 opacity-80 uppercase tracking-wider">⭐ Actualizar a Pro</h3>
-              <p className="text-text-muted text-[11px] leading-relaxed">
-                Funciones avanzadas como múltiples perfiles y cartas de presentación personalizadas.
-              </p>
-            </div>
-          </div>
-        </main>
+      <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="bg-bg-primary/90 border border-white/10 rounded-xl p-6 hover:border-white/20 transition-colors">
+           <div className="text-white/20 select-none mb-3"><span className="text-accent-cyan">##</span> ANALYTICS</div>
+           <p className="text-white/50 text-[12px] leading-relaxed">
+             Próximamente: Métricas sobre la cantidad de caracteres ahorrados y formularios completados.
+           </p>
+        </div>
+        <div className="bg-bg-primary/90 border border-white/10 rounded-xl p-6 hover:border-accent-violet/30 transition-colors group">
+           <div className="text-white/20 select-none mb-3 group-hover:text-accent-violet transition-colors"><span className="text-accent-violet">##</span> UNLOCK_PRO</div>
+           <p className="text-white/50 text-[12px] leading-relaxed">
+             Funciones avanzadas: múltiples alias comerciales y AI-Gen Cover Letters en un click.
+           </p>
+        </div>
       </div>
     </div>
   );
 };
+

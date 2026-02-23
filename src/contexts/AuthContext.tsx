@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const accessToken = authService.getAccessToken();
           const refreshToken = localStorage.getItem('refresh_token');
           if (accessToken && refreshToken) {
-            extensionBridge.syncTokens(accessToken, refreshToken);
+            extensionBridge.syncTokens(accessToken, refreshToken, userData);
           }
         } catch (error) {
           console.error('Failed to fetch user:', error);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authService.loginWithGoogle(credential);
       setUser(response.user);
-      extensionBridge.syncTokens(response.access_token, response.refresh_token);
+      extensionBridge.syncTokens(response.access_token, response.refresh_token, response.user);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;

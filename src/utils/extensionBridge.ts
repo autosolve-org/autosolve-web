@@ -1,8 +1,9 @@
 // Extension bridge for chrome.storage sync
+import type { User } from '../services/auth.service';
 
 export interface ExtensionBridge {
   isExtensionPresent(): boolean;
-  syncTokens(accessToken: string, refreshToken: string): void;
+  syncTokens(accessToken: string, refreshToken: string, user?: User | null): void;
   clearTokens(): void;
 }
 
@@ -13,7 +14,7 @@ class ChromeExtensionBridge implements ExtensionBridge {
     return true; 
   }
 
-  syncTokens(accessToken: string, refreshToken: string): void {
+  syncTokens(accessToken: string, refreshToken: string, user: User | null = null): void {
     if (!this.isExtensionPresent()) {
       console.log('Extension not present, skipping token sync');
       return;
@@ -27,6 +28,7 @@ class ChromeExtensionBridge implements ExtensionBridge {
           payload: {
             access_token: accessToken,
             refresh_token: refreshToken,
+            user: user,
           },
         },
         '*'

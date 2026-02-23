@@ -1,11 +1,9 @@
-import { type FC } from 'react';
+import { type FC, useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { 
-  ChevronDown, 
-  ChevronUp, 
   Sparkles, 
-  MapPin 
+  MapPin,
+  X 
 } from 'lucide-react';
-import { ProfileField } from './ProfileField';
 import { 
   type ProfileSection, 
   type ProfileField as ProfileFieldType 
@@ -21,12 +19,75 @@ interface ProfileFormProps {
   onDetectLocation: () => Promise<void>;
 }
 
+const AutoResizeTextarea: FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = 'auto';
+      ref.current.style.height = ref.current.scrollHeight + 'px';
+    }
+  }, [props.value]);
+
+  return (
+    <textarea 
+      {...props}
+      ref={ref}
+      rows={1}
+      className={`bg-transparent outline-none resize-none overflow-hidden block ${props.className || ''}`}
+    />
+  );
+};
+
+const CustomFieldRow: FC<{ 
+  labelKey: string; 
+  value: string; 
+  onChange: (key: string, val: string) => void;
+  onRename: (oldKey: string, newKey: string) => void;
+  onDelete: (key: string) => void;
+}> = ({ labelKey, value, onChange, onRename, onDelete }) => {
+  const [localKey, setLocalKey] = useState(labelKey);
+
+  const handleKeyBlur = () => {
+    if (localKey !== labelKey && localKey.trim() !== '') {
+      onRename(labelKey, localKey.trim());
+    } else {
+      setLocalKey(labelKey);
+    }
+  };
+
+  return (
+    <div className="flex relative items-start hover:bg-white/5 -mx-4 px-4 rounded transition-colors group py-1">
+      <input 
+        type="text"
+        value={localKey}
+        onChange={e => setLocalKey(e.target.value)}
+        onBlur={handleKeyBlur}
+        className="text-accent-cyan font-semibold bg-transparent outline-none w-[160px] md:w-[200px] shrink-0 py-1.5 focus:bg-white/5 rounded px-2 -ml-2 transition-colors"
+      />
+      <span className="text-accent-cyan/50 py-1.5 pr-3 select-none -ml-1">:</span>
+      
+      <AutoResizeTextarea 
+        value={value}
+        onChange={e => onChange(labelKey, e.target.value)}
+        className="text-white flex-1 py-1.5 min-w-0 placeholder:text-white/10 focus:bg-white/5 rounded px-2 -mx-2 transition-colors"
+      />
+
+      <button 
+        onClick={() => onDelete(labelKey)} 
+        className="text-red-400/50 hover:text-red-400 opacity-0 group-hover:opacity-100 p-1.5 ml-2 transition-opacity h-fit mt-0.5"
+        title="Eliminar campo"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+};
+
 export const ProfileForm: FC<ProfileFormProps> = ({
   activeSection,
   formData,
   onFieldChange,
-  expandedGroups,
-  onToggleGroup,
   isLocating,
   onDetectLocation,
 }) => {
@@ -39,91 +100,156 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   });
 
   const groupKeys = Object.keys(groupedFields);
-  const hasMultipleGroups = groupKeys.length > 1;
+
+  // Dynamic Fields
+  const customData = (formData.data as Record<string, string>) || {};
+  // Only show custom keys. Exclude technical keys like knowledge_base
+  const customKeys = Object.keys(customData).filter(k => k !== 'knowledge_base');
+
+  const handleCustomChange = (key: string, val: string) => {
+    onFieldChange('data', { ...customData, [key]: val });
+  };
+
+  const handleCustomRename = (oldKey: string, newKey: string) => {
+    if (oldKey === newKey) return;
+    const newData = { ...customData };
+    newData[newKey] = newData[oldKey];
+    delete newData[oldKey];
+    onFieldChange('data', newData);
+  };
+
+  const handleCustomDelete = (key: string) => {
+    const newData = { ...customData };
+    delete newData[key];
+    onFieldChange('data', newData);
+  };
+
+  const [newFieldText, setNewFieldText] = useState('');
+
+  const handleNewFieldKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+       e.preventDefault();
+       const val = newFieldText;
+       const colonIdx = val.indexOf(':');
+       if (colonIdx > 0) {
+          const k = val.substring(0, colonIdx).trim();
+          const v = val.substring(colonIdx + 1).trim();
+          if (k) {
+             handleCustomChange(k, v);
+             setNewFieldText('');
+          }
+       }
+    }
+  };
 
   return (
-    <section className="card bg-bg-primary p-0 rounded-xl border border-white/10 animate-scale-in overflow-hidden shadow-2xl shadow-black/20">
-      {/* Form Header with background */}
-      <div className="p-6 border-b border-white/5 bg-white/5">
-        <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 select-none mb-4">
-          Datos del Usuario
-        </h1>
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-accent-violet/10 flex items-center justify-center border border-accent-violet/20 text-2xl shadow-inner shadow-accent-violet/5">
-            {activeSection.icon}
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">{activeSection.title}</h2>
-            <p className="text-xs text-text-secondary mt-0.5">
-              {activeSection.required ? 'Información necesaria para tu perfil profesional.' : 'Completa estos campos para mejorar tu perfil.'}
-            </p>
-          </div>
-          {activeSection.required && (
-            <span className="text-[9px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full border border-red-500/20 font-black ml-auto tracking-widest">
-              Requerido
-            </span>
-          )}
+    <section className="bg-bg-primary/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden font-mono text-[13px] leading-relaxed relative animate-scale-in">
+      {/* macOS window controls mock */}
+      <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center gap-2 select-none">
+        <div className="flex gap-2 mr-4">
+          <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
+          <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+        </div>
+        <div className="text-white/30 text-[11px] uppercase tracking-[0.2em] flex items-center gap-2 font-sans font-bold flex-1 justify-end">
+           PROFILE.MD
         </div>
       </div>
 
-      {/* Form Body: Transparent & Seamless Groups */}
-      <div className="space-y-0">
-        {groupKeys.map((groupName, idx) => {
-          const fields = groupedFields[groupName];
-          const isExpanded = expandedGroups[groupName] ?? true;
-          const isLast = idx === groupKeys.length - 1;
+      <div className="p-6 md:p-8">
+        <div className="mb-8">
+          <h1 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+            <span className="text-accent-violet">#</span> {activeSection.id}
+          </h1>
+          <div className="text-white/40 text-[12px] uppercase tracking-wider font-bold">
+            ## {activeSection.description}
+          </div>
+        </div>
 
-          return (
-            <div key={groupName} className={`${hasMultipleGroups ? `${!isLast ? 'border-b' : ''} border-white/5 bg-transparent` : ''}`}>
-              {hasMultipleGroups && (
-                <button 
-                  onClick={() => onToggleGroup(groupName)}
-                  className={`w-full px-6 py-4 flex items-center justify-between transition-all group/btn ${isExpanded ? 'bg-white/5' : 'hover:bg-white/10'}`}
-                >
-                  <h3 className="text-xs font-bold text-white tracking-[0.2em] flex items-center gap-3">
-                     <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isExpanded ? 'bg-accent-violet shadow-[0_0_8px_rgba(139,92,246,0.6)]' : 'bg-white/10'}`} />
-                     {groupName}
-                  </h3>
-                  <div className={`p-1 rounded-md transition-colors ${isExpanded ? 'bg-accent-violet/10 text-accent-violet' : 'text-text-muted group-hover/btn:text-white'}`}>
-                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        {groupKeys.map(groupName => (
+          <div key={groupName} className="mb-10 last:mb-0">
+            {groupKeys.length > 1 && (
+              <div className="text-white/20 select-none mb-4 flex items-center gap-2">
+                <span className="text-accent-violet hidden md:inline">##</span> {groupName}
+              </div>
+            )}
+            
+            <div className="space-y-1">
+              {groupedFields[groupName].map(field => (
+                <div key={field.name} className="flex relative items-start -mx-4 px-4 rounded transition-colors py-1">
+                  {/* Fixed Label - un-deletable text */}
+                  <div className="text-accent-violet select-none w-[160px] md:w-[200px] shrink-0 py-1.5 flex items-center font-semibold">
+                    {field.label}
+                    <span className="text-accent-violet/50 ml-1">:</span>
                   </div>
-                </button>
-              )}
-              {(isExpanded || !hasMultipleGroups) && (
-                <div className={`p-6 animate-fade-in ${(idx > 0 && isExpanded && hasMultipleGroups) ? 'border-t border-white/5' : ''} grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 relative`}>
                   
-                  {/* Auto-Location Button - Only show in relevant sections/groups */}
-                  {(groupName === 'Ubicación' || activeSection.id === 'location') && (
-                     <div className="md:col-span-2 flex justify-end mb-2">
-                        <button 
-                          type="button"
-                          onClick={onDetectLocation}
-                          disabled={isLocating}
-                          className="text-[10px] flex items-center gap-1.5 px-3 py-1.5 bg-accent-cyan/10 hover:bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/20 rounded-lg transition-all"
-                        >
-                          {isLocating ? (
-                              <Sparkles className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                              <MapPin className="w-3.5 h-3.5" />
-                          )}
-                          {isLocating ? 'Detectando...' : 'Detectar Ubicación Actual'}
-                        </button>
-                     </div>
+                  {/* Editable Value */}
+                  <AutoResizeTextarea 
+                    value={(formData[field.name] as string) || ''}
+                    onChange={(e) => onFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder || `...`}
+                    className="text-white flex-1 py-1.5 min-w-0 placeholder:text-white/10 focus:bg-white/5 rounded px-2 -mx-2 transition-colors"
+                  />
+                  
+                  {field.required && (
+                    <div className="absolute right-0 top-3 opacity-30 select-none text-[10px] text-red-400 pr-2 pointer-events-none">
+                      required
+                    </div>
                   )}
-                  
-                  {fields.map((field) => (
-                    <ProfileField 
-                      key={field.name}
-                      field={field}
-                      value={formData[field.name]}
-                      onChange={onFieldChange}
-                    />
-                  ))}
                 </div>
-              )}
+              ))}
             </div>
-          );
-        })}
+          </div>
+        ))}
+
+        {(activeSection.id === 'location' || activeSection.description === 'Ubicación') && (
+           <button 
+             onClick={onDetectLocation} 
+             disabled={isLocating}
+             className="text-accent-cyan flex items-center gap-2 hover:bg-accent-cyan/10 px-4 py-2 rounded-lg transition-all bg-accent-cyan/5 border border-accent-cyan/20 w-fit mb-8 shadow-lg shadow-accent-cyan/5 font-sans font-medium text-xs"
+           >
+             {isLocating ? <Sparkles className="w-4 h-4 animate-spin"/> : <MapPin className="w-4 h-4"/>}
+             {isLocating ? 'Detectando coordenadas...' : 'completar_automáticamente.sh'}
+           </button>
+        )}
+
+        {/* JSONB / Dynamic Extra Information */}
+        <div className="mt-10 pt-8 border-t border-white/5 relative">
+          <div className="text-white/20 select-none mb-4 flex items-center gap-2">
+            <div className="text-white/10 tracking-wider font-bold">
+              <span className="">//</span>
+              <span className="ml-2 font-sans italic">{"Info Adicional"}</span>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            {customKeys.map(key => (
+               <CustomFieldRow 
+                 key={key} 
+                 labelKey={key} 
+                 value={customData[key]} 
+                 onChange={handleCustomChange}
+                 onRename={handleCustomRename}
+                 onDelete={handleCustomDelete}
+               />
+            ))}
+
+            {/* New Line Input */}
+             <div className="flex relative items-start mt-4 bg-black/20 border border-dashed border-white/10 rounded-lg p-2.5 hover:border-accent-cyan/30 transition-colors focus-within:border-accent-cyan/50 focus-within:bg-accent-cyan/5">
+                <div className="text-accent-cyan/50 select-none shrink-0 mr-3 flex items-center font-bold">
+                   +
+                </div>
+                <input 
+                  type="text"
+                  className="bg-transparent text-white outline-none flex-1 placeholder:text-white/20 text-sm"
+                  placeholder="Ejemplo: 'Disponibilidad: Inmediata' y presiona Enter..."
+                  value={newFieldText}
+                  onChange={(e) => setNewFieldText(e.target.value)}
+                  onKeyDown={handleNewFieldKeyDown}
+                />
+             </div>
+          </div>
+        </div>
       </div>
     </section>
   );
