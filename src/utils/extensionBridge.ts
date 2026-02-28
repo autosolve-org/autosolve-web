@@ -5,6 +5,7 @@ export interface ExtensionBridge {
   isExtensionPresent(): boolean;
   syncTokens(accessToken: string, refreshToken: string, user?: User | null): void;
   clearTokens(): void;
+  refreshProfileCache(): void;
 }
 
 class ChromeExtensionBridge implements ExtensionBridge {
@@ -54,6 +55,16 @@ class ChromeExtensionBridge implements ExtensionBridge {
       console.log('Logout synced with extension');
     } catch (error) {
       console.error('Failed to sync logout with extension:', error);
+    }
+  }
+
+  refreshProfileCache(): void {
+    if (!this.isExtensionPresent()) return;
+    try {
+      window.postMessage({ type: 'AUTOSOLVE_REFRESH_PROFILE' }, '*');
+      console.log('Profile cache refresh request sent to extension');
+    } catch (error) {
+      console.error('Failed to request profile cache refresh:', error);
     }
   }
 }

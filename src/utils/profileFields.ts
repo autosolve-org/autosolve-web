@@ -62,7 +62,8 @@ export const profileSections: ProfileSection[] = [
       {
         name: 'birth_date',
         label: 'Fecha de Nacimiento',
-        type: 'date',
+        type: 'text',
+        placeholder: '25/12/1995',
       },
     ],
   },

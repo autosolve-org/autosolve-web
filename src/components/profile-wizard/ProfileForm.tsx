@@ -17,6 +17,8 @@ interface ProfileFormProps {
   onToggleGroup: (group: string) => void;
   isLocating: boolean;
   onDetectLocation: () => Promise<void>;
+  isSaving: boolean;
+  showSaveSuccess: boolean;
 }
 
 const AutoResizeTextarea: FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => {
@@ -90,6 +92,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   onFieldChange,
   isLocating,
   onDetectLocation,
+  isSaving,
+  showSaveSuccess,
 }) => {
   // Group fields if section has groups
   const groupedFields: Record<string, ProfileFieldType[]> = {};
@@ -144,6 +148,25 @@ export const ProfileForm: FC<ProfileFormProps> = ({
 
   return (
     <section className="bg-bg-primary/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden font-mono text-[13px] leading-relaxed relative animate-scale-in">
+      {/* OVERLAY */}
+      {(isSaving || showSaveSuccess) && (
+        <div className="absolute inset-0 z-50 bg-bg-primary/80 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-300">
+          {isSaving ? (
+             <div className="flex flex-col items-center gap-6">
+               <div className="w-12 h-12 border-4 border-accent-cyan/20 border-t-accent-cyan rounded-full animate-spin"></div>
+               <span className="text-accent-cyan font-bold tracking-[0.2em] font-sans text-sm animate-pulse">GUARDANDO...</span>
+             </div>
+          ) : (
+             <div className="flex flex-col items-center gap-6 animate-scale-in">
+               <div className="w-14 h-14 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+                 <Sparkles className="w-6 h-6" />
+               </div>
+               <span className="text-green-400 font-bold tracking-[0.2em] font-sans text-sm">GUARDADO EXITOSO</span>
+             </div>
+          )}
+        </div>
+      )}
+
       {/* macOS window controls mock */}
       <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center gap-2 select-none">
         <div className="flex gap-2 mr-4">

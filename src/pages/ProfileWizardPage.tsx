@@ -6,6 +6,7 @@ import {
 } from '../utils/profileFields';
 import { api } from '../services/api';
 import { profileService } from '../services/profile.service';
+import { extensionBridge } from '../utils/extensionBridge';
 
 // Components
 import {
@@ -93,6 +94,10 @@ export const ProfileWizardPage: FC = () => {
       await api.put(`/users/profiles/${profileId}`, data);
       updateUser(data);
       setOriginalData(data);
+      
+      // Tell the extension to fetch the newest profile version
+      extensionBridge.refreshProfileCache();
+      
       if (!silent) {
         setShowSaveSuccess(true);
         setTimeout(() => setShowSaveSuccess(false), 3000);
@@ -204,14 +209,6 @@ export const ProfileWizardPage: FC = () => {
 
   return (
     <div>
-      <div className="flex justify-end mb-4 h-6">
-        {showSaveSuccess && (
-          <span className="text-green-400 text-sm flex items-center gap-2 animate-fade-in">
-            <CheckCircle2 className="w-4 h-4" /> Guardado
-          </span>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <ProfileForm
@@ -222,6 +219,8 @@ export const ProfileWizardPage: FC = () => {
             onToggleGroup={toggleGroup}
             isLocating={isLocating}
             onDetectLocation={handleDetectLocation}
+            isSaving={isSaving}
+            showSaveSuccess={showSaveSuccess}
           />
           
         </div>
