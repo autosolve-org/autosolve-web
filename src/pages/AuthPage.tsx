@@ -13,29 +13,12 @@ export const AuthPage: FC = () => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, determining destination...');
       if (user.onboarding_completed) {
-        console.log('Onboarding completed, navigating to /welcome');
         navigate('/welcome', { replace: true });
       } else {
-        console.log('Onboarding pending, navigating to /profile');
         navigate('/profile', { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);
-
-  const handleSuccess = async (credential: string) => {
-    console.log('Google Sign-In Success! Credential received.');
-    try {
-      await login(credential);
-      // Redirection is handled by the useEffect above
-      console.log('Login backend exchange successful');
-    } catch (error) {
-      console.error('Login failed during backend exchange:', error);
-    }
-  };
-
-  const handleError = () => {
-    console.error('Google Sign-In Error');
-  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] p-4 sm:p-8 font-mono relative">
@@ -77,7 +60,7 @@ export const AuthPage: FC = () => {
 
           <div className="space-y-6">
             <div className="flex justify-start">
-              <GoogleSignInButton onSuccess={handleSuccess} onError={handleError} />
+              <GoogleSignInButton />
             </div>
 
             <div className="pt-8 border-t border-white/5">

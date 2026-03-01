@@ -121,15 +121,27 @@ export const ProfileWizardPage: FC = () => {
       'carrera': 'degree',
       'ciudad': 'city',
       'pais': 'country',
-      'bio': 'bio',
+      'bio': 'experience_summary',
       'skills': 'skills',
     };
 
     const updates: Record<string, unknown> = {};
     Object.entries(parsedData).forEach(([key, value]) => {
       if (value === null || value === undefined || value === '') return;
+      
+      if (key === 'linkedin_url') {
+        const currentData = (formData.data as Record<string, unknown>) || {};
+        if (!currentData.linkedin && !currentData.linkedin_url) {
+           updates.data = { ...currentData, linkedin_url: value };
+        }
+        return;
+      }
+
       const mappedKey = keyMap[key] || key;
-      updates[mappedKey] = value;
+      // Sólo actualizar si el campo actual está vacío, para no reescribir
+      if (!formData[mappedKey]) {
+        updates[mappedKey] = value;
+      }
     });
 
     const newData = { ...formData, ...updates };

@@ -20,11 +20,16 @@ export interface AuthResponse {
 
 export const authService = {
   async loginWithGoogle(credential: string): Promise<AuthResponse> {
-    console.log('Sending login request to:', '/auth/google');
-    console.log('Payload:', { google_token: credential.substring(0, 10) + '...' });
+    console.log('authService: loginWithGoogle triggered');
+    console.log('authService: endpoint:', '/auth/google');
+    // Log safe version of credential
+    console.log('authService: token prefix:', credential.substring(0, 10) + '...');
+    
     const response = await api.post<AuthResponse>('/auth/google', {
       google_token: credential,
     });
+    
+    console.log('authService: login request completed successfully');
 
     // Store tokens
     localStorage.setItem('access_token', response.access_token);

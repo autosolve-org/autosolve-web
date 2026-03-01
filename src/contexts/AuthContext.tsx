@@ -18,39 +18,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state
-  useEffect(() => {
-    async function initAuth() {
-      if (authService.isAuthenticated()) {
-        try {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
-          // Sync tokens with extension if present
-          const accessToken = authService.getAccessToken();
-          const refreshToken = localStorage.getItem('refresh_token');
-          if (accessToken && refreshToken) {
-            extensionBridge.syncTokens(accessToken, refreshToken, userData);
-          }
-        } catch (error) {
-          console.error('Failed to fetch user:', error);
-          authService.logout();
-          setUser(null);
-        }
-      }
-      setIsLoading(false);
-    }
-
-    initAuth();
-  }, []);
-
   const login = async (credential: string) => {
+    console.log('AuthContext: starting login process...');
     setIsLoading(true);
     try {
+      console.log('AuthContext: calling authService.loginWithGoogle...');
       const response = await authService.loginWithGoogle(credential);
+      console.log('AuthContext: login successful, user:', response.user.email);
       setUser(response.user);
       extensionBridge.syncTokens(response.access_token, response.refresh_token, response.user);
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('AuthContext: login failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -69,6 +47,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Initialize auth state
+  useEffect(() => {
+    async function initAuth() {
+      console.log('AuthContext: initializing...');
+      
+      // 1. Check if we are returning from a Google redirect
+      const hash = window.location.hash;
+      console.log('AuthContext: current hash:', hash ? 'present' : 'empty');
+      
+      if (hash) {
+        const params = new URLSearchParams(hash.substring(1));
+        const accessToken = params.get('access_token');
+        
+        if (accessToken) {
+          console.log('AuthContext: Redirect token detected! Attempting login...');
+          try {
+            await login(accessToken);
+            console.log('AuthContext: Redirect login success. Cleaning URL...');
+            window.history.replaceState(null, '', window.location.pathname);
+            setIsLoading(false);
+            return;
+          } catch (error) {
+            console.error('AuthContext: Failed to login with redirect token:', error);
+          }
+        }
+      }
+
+      // 2. Otherwise, check existing session
+      console.log('AuthContext: checking existing session...');
+      if (authService.isAuthenticated()) {
+        try {
+          const userData = await authService.getCurrentUser();
+          console.log('AuthContext: session found for:', userData.email);
+          setUser(userData);
+          // Sync tokens with extension if present
+          const accessToken = authService.getAccessToken();
+          const refreshToken = localStorage.getItem('refresh_token');
+          if (accessToken && refreshToken) {
+            extensionBridge.syncTokens(accessToken, refreshToken, userData);
+          }
+        } catch (error) {
+          console.error('AuthContext: Failed to fetch user from session:', error);
+          authService.logout();
+          setUser(null);
+        }
+      } else {
+        console.log('AuthContext: no existing session.');
+      }
+      setIsLoading(false);
+    }
+
+    initAuth();
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -80,7 +112,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         updateUser,
       }}
     >
-      {children}
+      {isLoading ? (
+        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
+          <div className="w-12 h-12 border-4 border-[#8b5cf6] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }
