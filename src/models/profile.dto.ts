@@ -1,8 +1,6 @@
 export interface ProfileDTO {
   id?: string;
   user_id?: string;
-  label: string; // Personal | Work | University
-  is_default: boolean;
 
   // ── Identity ──
   first_name: string;
@@ -19,22 +17,16 @@ export interface ProfileDTO {
   country?: string | null;
   postal_code?: string | null;
 
-  // ── Experience ──
-  profession?: string | null;
-  company?: string | null;
-  job_title?: string | null;
-  experience_summary?: string | null;
-  skills?: string | null;
+  // ── CV ──
+  cv_url?: string | null;
+  cv_parsed_data?: Record<string, any> | null;
 
-  // ── Education ──
-  university?: string | null;
-  degree?: string | null;
-  start_date?: string | null;
-  end_date?: string | null;
-  certifications?: string | null;
+  // ── Learned Fields (from Chrome Extension Learner) ──
+  learned_fields?: Record<string, any> | null;
 
-  // Extra/Custom data
-  data?: Record<string, any> | null;
+  // ── User Preferences ──
+  preferences?: Record<string, any> | null;
+
   created_at?: string;
   updated_at?: string;
 }

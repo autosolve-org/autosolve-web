@@ -13,7 +13,7 @@ interface ProfileWizardSidebarProps {
   isSaving: boolean;
   hasChanges: boolean;
   formData: Record<string, unknown>;
-  handleCVUpload: (data: Record<string, unknown>) => void;
+  handleCVUpload: () => void;
   handleSubmit: () => void;
   getSidebarIcon: (id: string, isActive: boolean) => ReactNode;
 }

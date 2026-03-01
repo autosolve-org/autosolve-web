@@ -10,7 +10,6 @@ import { extensionBridge } from '../utils/extensionBridge';
 
 // Components
 import {
-  CheckCircle2,
   User,
   Briefcase,
   GraduationCap,
@@ -33,8 +32,7 @@ export const ProfileWizardPage: FC = () => {
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(profileSections[0].id);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    'Identidad': true,
-    'Ubicación': true
+    'Identidad': true
   });
   const [isLocating, setIsLocating] = useState(false);
 
@@ -46,7 +44,9 @@ export const ProfileWizardPage: FC = () => {
         let initialData = { ...user };
         const profile = await profileService.getActiveProfile();
         if (profile) {
-            initialData = { ...initialData, ...profile };
+            // Flatten learned_fields for the frontend form to easily read
+            const flatLearnedFields = profile.learned_fields || {};
+            initialData = { ...initialData, ...profile, ...flatLearnedFields };
         }
         setFormData(initialData);
         setOriginalData(initialData);
@@ -90,8 +90,22 @@ export const ProfileWizardPage: FC = () => {
     if (!user?.id) return;
     if (!silent) setIsSaving(true);
     try {
-      const profileId = (data.id as string) || user.id;
-      await api.put(`/users/profiles/${profileId}`, data);
+      // 1. Map fields that are no longer strictly in the SQL schema directly to learned_fields
+      const strictSQLKeys = ['id', 'user_id', 'first_name', 'last_name', 'email', 'phone_number', 'cv_url', 'cv_parsed_data', 'learned_fields', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider'];
+      const learnedFieldsPayload: Record<string, unknown> = { ...(data.learned_fields as Record<string, unknown> || {}) };
+      const payload: Record<string, unknown> = {
+          learned_fields: learnedFieldsPayload
+      };
+
+      for (const [key, value] of Object.entries(data)) {
+          if (strictSQLKeys.includes(key)) {
+              payload[key] = value;
+          } else {
+              learnedFieldsPayload[key] = value;
+          }
+      }
+
+      await profileService.updateProfile(payload);
       updateUser(data);
       setOriginalData(data);
       
@@ -109,44 +123,20 @@ export const ProfileWizardPage: FC = () => {
     }
   };
 
-  const handleCVUpload = (parsedData: Record<string, unknown>) => {
-    const keyMap: Record<string, string> = {
-      'nombre': 'first_name',
-      'apellido': 'last_name',
-      'telefono': 'phone_number',
-      'profesion': 'profession',
-      'empresa': 'company',
-      'cargo': 'job_title',
-      'universidad': 'university',
-      'carrera': 'degree',
-      'ciudad': 'city',
-      'pais': 'country',
-      'bio': 'experience_summary',
-      'skills': 'skills',
-    };
-
-    const updates: Record<string, unknown> = {};
-    Object.entries(parsedData).forEach(([key, value]) => {
-      if (value === null || value === undefined || value === '') return;
-      
-      if (key === 'linkedin_url') {
-        const currentData = (formData.data as Record<string, unknown>) || {};
-        if (!currentData.linkedin && !currentData.linkedin_url) {
-           updates.data = { ...currentData, linkedin_url: value };
-        }
-        return;
+  const handleCVUpload = async () => {
+    // The backend already updated the database with the CV data during the parse_cv request.
+    // So we just need to re-fetch the latest profile data from the server.
+    try {
+      const updatedProfile = await profileService.getActiveProfile(true); // force refresh
+      if (updatedProfile && user?.id) {
+        setFormData(prev => ({ ...prev, ...updatedProfile }));
+        setOriginalData(prev => ({ ...prev, ...updatedProfile }));
+        updateUser(updatedProfile);
+        extensionBridge.refreshProfileCache();
       }
-
-      const mappedKey = keyMap[key] || key;
-      // Sólo actualizar si el campo actual está vacío, para no reescribir
-      if (!formData[mappedKey]) {
-        updates[mappedKey] = value;
-      }
-    });
-
-    const newData = { ...formData, ...updates };
-    setFormData(newData);
-    saveProfile(newData);
+    } catch (error) {
+      console.error('Error fetching updated profile after CV upload:', error);
+    }
   };
 
   const handleDetectLocation = async () => {
@@ -171,7 +161,8 @@ export const ProfileWizardPage: FC = () => {
             if (addr.postcode) updates.postal_code = addr.postcode;
             if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
 
-            const newData = { ...formData, ...updates };
+            const currentLearned = (formData.learned_fields as Record<string, string>) || {};
+            const newData = { ...formData, learned_fields: { ...currentLearned, ...updates } };
             setFormData(newData);
             saveProfile(newData, true);
           }

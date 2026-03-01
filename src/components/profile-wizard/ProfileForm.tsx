@@ -1,8 +1,8 @@
 import { type FC, useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { 
-  Sparkles, 
+  Sparkles,
   MapPin,
-  X 
+  X
 } from 'lucide-react';
 import { 
   type ProfileSection, 
@@ -106,12 +106,12 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   const groupKeys = Object.keys(groupedFields);
 
   // Dynamic Fields
-  const customData = (formData.data as Record<string, string>) || {};
+  const customData = (formData.learned_fields as Record<string, string>) || {};
   // Only show custom keys. Exclude technical keys like knowledge_base
   const customKeys = Object.keys(customData).filter(k => k !== 'knowledge_base');
 
   const handleCustomChange = (key: string, val: string) => {
-    onFieldChange('data', { ...customData, [key]: val });
+    onFieldChange('learned_fields', { ...customData, [key]: val });
   };
 
   const handleCustomRename = (oldKey: string, newKey: string) => {
@@ -119,13 +119,13 @@ export const ProfileForm: FC<ProfileFormProps> = ({
     const newData = { ...customData };
     newData[newKey] = newData[oldKey];
     delete newData[oldKey];
-    onFieldChange('data', newData);
+    onFieldChange('learned_fields', newData);
   };
 
   const handleCustomDelete = (key: string) => {
     const newData = { ...customData };
     delete newData[key];
-    onFieldChange('data', newData);
+    onFieldChange('learned_fields', newData);
   };
 
   const [newFieldText, setNewFieldText] = useState('');
@@ -225,24 +225,23 @@ export const ProfileForm: FC<ProfileFormProps> = ({
           </div>
         ))}
 
-        {(activeSection.id === 'location' || activeSection.description === 'Ubicación') && (
-           <button 
-             onClick={onDetectLocation} 
-             disabled={isLocating}
-             className="text-accent-cyan flex items-center gap-2 hover:bg-accent-cyan/10 px-4 py-2 rounded-lg transition-all bg-accent-cyan/5 border border-accent-cyan/20 w-fit mb-8 shadow-lg shadow-accent-cyan/5 font-sans font-medium text-xs"
-           >
-             {isLocating ? <Sparkles className="w-4 h-4 animate-spin"/> : <MapPin className="w-4 h-4"/>}
-             {isLocating ? 'Detectando coordenadas...' : 'completar_automáticamente.sh'}
-           </button>
-        )}
 
         {/* JSONB / Dynamic Extra Information */}
         <div className="mt-10 pt-8 border-t border-white/5 relative">
-          <div className="text-white/20 select-none mb-4 flex items-center gap-2">
-            <div className="text-white/10 tracking-wider font-bold">
-              <span className="">//</span>
-              <span className="ml-2 font-sans italic">{"Info Adicional"}</span>
+          <div className="text-white/20 select-none mb-6 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-white/10 font-bold tracking-wider">//</span>
+              <span className="ml-1 font-sans italic text-white/50">Info Adicional</span>
             </div>
+            
+            <button 
+              onClick={onDetectLocation} 
+              disabled={isLocating}
+              className="text-accent-cyan flex items-center gap-2 hover:bg-accent-cyan/10 px-3 py-1.5 rounded-lg transition-all bg-accent-cyan/5 border border-accent-cyan/20 w-fit shadow-lg shadow-accent-cyan/5 font-sans font-medium text-[11px]"
+            >
+               {isLocating ? <Sparkles className="w-3 h-3 animate-spin"/> : <MapPin className="w-3 h-3"/>}
+               {isLocating ? 'Detectando...' : 'Autocompletar Ubicación'}
+            </button>
           </div>
 
           <div className="space-y-1">

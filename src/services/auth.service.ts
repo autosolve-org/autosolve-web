@@ -1,6 +1,7 @@
 // Google OAuth and JWT token management
 
 import { api } from './api';
+import { profileService } from './profile.service';
 
 export interface User {
   id: string;
@@ -62,6 +63,9 @@ export const authService = {
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    
+    // Clear profile cache on logout
+    profileService.clearCache();
     
     // Clear extension storage if available
     if (window.chrome?.runtime?.id) {
