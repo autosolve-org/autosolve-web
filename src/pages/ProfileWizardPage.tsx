@@ -83,7 +83,15 @@ export const ProfileWizardPage: FC = () => {
   }, [formData, originalData]);
 
   const handleFieldChange = (name: string, value: unknown) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+        const newData = { ...prev };
+        if (value === undefined) {
+            delete newData[name];
+        } else {
+            newData[name] = value;
+        }
+        return newData;
+    });
   };
 
   const saveProfile = async (data: Record<string, unknown>, silent = false) => {

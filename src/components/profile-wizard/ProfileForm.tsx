@@ -120,12 +120,16 @@ export const ProfileForm: FC<ProfileFormProps> = ({
     newData[newKey] = newData[oldKey];
     delete newData[oldKey];
     onFieldChange('learned_fields', newData);
+    // Remove the old flattened entry to prevent it being added back during save
+    onFieldChange(oldKey, undefined);
   };
 
   const handleCustomDelete = (key: string) => {
     const newData = { ...customData };
     delete newData[key];
     onFieldChange('learned_fields', newData);
+    // Remove the flattened entry that could cause it to be added back during save
+    onFieldChange(key, undefined); 
   };
 
   const [newFieldText, setNewFieldText] = useState('');
