@@ -27,14 +27,14 @@ export const profileSections: ProfileSection[] = [
     required: true,
     fields: [
       {
-        name: 'first_name',
+        name: 'names',
         label: 'Nombres',
         type: 'text',
         placeholder: 'Juan Román',
         required: true,
       },
       {
-        name: 'last_name',
+        name: 'surnames',
         label: 'Apellidos',
         type: 'text',
         placeholder: 'Pérez García',

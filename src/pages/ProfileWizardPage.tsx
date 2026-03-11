@@ -99,7 +99,7 @@ export const ProfileWizardPage: FC = () => {
     if (!silent) setIsSaving(true);
     try {
       // 1. Map fields that are no longer strictly in the SQL schema directly to learned_fields
-      const strictSQLKeys = ['id', 'user_id', 'first_name', 'last_name', 'email', 'phone_number', 'cv_url', 'cv_parsed_data', 'learned_fields', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider'];
+      const strictSQLKeys = ['id', 'user_id', 'names', 'surnames', 'email', 'phone_number', 'cv_url', 'cv_parsed_data', 'learned_fields', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider'];
       const learnedFieldsPayload: Record<string, unknown> = { ...(data.learned_fields as Record<string, unknown> || {}) };
       const payload: Record<string, unknown> = {
           learned_fields: learnedFieldsPayload

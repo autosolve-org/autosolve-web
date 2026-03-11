@@ -3,8 +3,8 @@ export interface ProfileDTO {
   user_id?: string;
 
   // ── Identity ──
-  first_name: string;
-  last_name: string;
+  names: string;
+  surnames: string;
   email: string;
   phone_number?: string | null;
 
