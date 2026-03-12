@@ -8,6 +8,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { AuthPage } from './pages/AuthPage';
 import { ProfileWizardPage } from './pages/ProfileWizardPage';
 import { WelcomePage } from './pages/WelcomePage';
+import { PlansPage } from './pages/PlansPage';
 
 // Protected Route Component
 const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
@@ -68,6 +69,16 @@ const App: FC = () => {
                 <ProtectedRoute>
                   <MainLayout>
                     <WelcomePage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/plan"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <PlansPage />
                   </MainLayout>
                 </ProtectedRoute>
               }

@@ -22,6 +22,7 @@ const SidebarContent: FC = () => {
   const navItems = [
     { label: 'welcome.md', path: '/welcome' },
     { label: 'profile.md', path: '/profile' },
+    { label: 'plan.md', path: '/plan' },
   ];
 
   return (
@@ -71,8 +72,15 @@ const SidebarContent: FC = () => {
                <div className="px-2 py-1.5 text-white/50 flex flex-col">
                   <span className="text-[10px] uppercase opacity-50 mb-1 font-bold">PLAN</span>
                   <div className="flex items-center gap-2">
-                     <span className="text-green-400">HOBBY</span>
-                     <button className="bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-[10px] text-white transition-colors">UPGRADE</button>
+                     <span className={`font-bold ${user?.plan === 'pro' ? 'text-accent-violet' : 'text-white/70'}`}>
+                        {user?.plan?.toUpperCase() || 'FREE'}
+                     </span>
+                     <button 
+                        onClick={() => navigate('/plan')}
+                        className="bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-[10px] text-white transition-colors"
+                     >
+                        CHANGE
+                     </button>
                   </div>
                </div>
                <div className="px-2 py-1.5 text-white/50 flex flex-col mt-2">

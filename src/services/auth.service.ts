@@ -10,6 +10,7 @@ export interface User {
   apellido?: string;
   picture?: string;
   onboarding_completed: boolean;
+  plan: string;
 }
 
 export interface AuthResponse {
@@ -83,5 +84,9 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
+  },
+
+  async updateCurrentUser(updates: Partial<User>): Promise<User> {
+    return api.patch<User>('/users/me', updates);
   },
 };
