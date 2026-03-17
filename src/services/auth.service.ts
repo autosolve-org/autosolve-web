@@ -6,9 +6,8 @@ import { profileService } from './profile.service';
 export interface User {
   id: string;
   email: string;
-  nombre?: string;
-  apellido?: string;
-  picture?: string;
+  display_name?: string;
+  avatar_url?: string;
   onboarding_completed: boolean;
   plan: string;
 }

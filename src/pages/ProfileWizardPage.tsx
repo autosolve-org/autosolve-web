@@ -44,9 +44,9 @@ export const ProfileWizardPage: FC = () => {
         let initialData = { ...user };
         const profile = await profileService.getActiveProfile();
         if (profile) {
-            // Flatten learned_fields for the frontend form to easily read
-            const flatLearnedFields = profile.learned_fields || {};
-            initialData = { ...initialData, ...profile, ...flatLearnedFields };
+          // Flatten data_learned for the frontend form to easily read
+          const flatLearned = profile.data_learned || {};
+          initialData = { ...initialData, ...profile, ...flatLearned };
         }
         setFormData(initialData);
         setOriginalData(initialData);
@@ -98,18 +98,18 @@ export const ProfileWizardPage: FC = () => {
     if (!user?.id) return;
     if (!silent) setIsSaving(true);
     try {
-      // 1. Map fields that are no longer strictly in the SQL schema directly to learned_fields
-      const strictSQLKeys = ['id', 'user_id', 'names', 'surnames', 'email', 'phone_number', 'cv_url', 'cv_parsed_data', 'learned_fields', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider'];
-      const learnedFieldsPayload: Record<string, unknown> = { ...(data.learned_fields as Record<string, unknown> || {}) };
+        // 1. Map non-schema fields to data_learned
+        const strictSQLKeys = ['id', 'user_id', 'cv_url', 'data_learned', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'email'];
+        const learnedPayload: Record<string, unknown> = { ...(data.data_learned as Record<string, unknown> || {}) };
       const payload: Record<string, unknown> = {
-          learned_fields: learnedFieldsPayload
+          data_learned: learnedPayload
       };
 
       for (const [key, value] of Object.entries(data)) {
           if (strictSQLKeys.includes(key)) {
               payload[key] = value;
           } else {
-              learnedFieldsPayload[key] = value;
+            learnedPayload[key] = value;
           }
       }
 
@@ -169,8 +169,8 @@ export const ProfileWizardPage: FC = () => {
             if (addr.postcode) updates.postal_code = addr.postcode;
             if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
 
-            const currentLearned = (formData.learned_fields as Record<string, string>) || {};
-            const newData = { ...formData, learned_fields: { ...currentLearned, ...updates } };
+            const currentLearned = (formData.data_learned as Record<string, string>) || {};
+            const newData = { ...formData, data_learned: { ...currentLearned, ...updates } };
             setFormData(newData);
             saveProfile(newData, true);
           }

@@ -65,6 +65,8 @@ const CustomFieldRow: FC<{
         value={localKey}
         onChange={e => setLocalKey(e.target.value)}
         onBlur={handleKeyBlur}
+        aria-label="Clave de dato"
+        placeholder="clave"
         className="text-accent-cyan font-semibold bg-transparent outline-none w-[160px] md:w-[200px] shrink-0 py-1.5 focus:bg-white/5 rounded px-2 -ml-2 transition-colors"
       />
       <span className="text-accent-cyan/50 py-1.5 pr-3 select-none -ml-1">:</span>
@@ -72,6 +74,7 @@ const CustomFieldRow: FC<{
       <AutoResizeTextarea 
         value={value}
         onChange={e => onChange(labelKey, e.target.value)}
+        aria-label={labelKey}
         className="text-white flex-1 py-1.5 min-w-0 placeholder:text-white/10 focus:bg-white/5 rounded px-2 -mx-2 transition-colors"
       />
 
@@ -106,12 +109,11 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   const groupKeys = Object.keys(groupedFields);
 
   // Dynamic Fields
-  const customData = (formData.learned_fields as Record<string, string>) || {};
-  // Only show custom keys. Exclude technical keys like knowledge_base
-  const customKeys = Object.keys(customData).filter(k => k !== 'knowledge_base');
+  const customData = (formData.data_learned as Record<string, string>) || {};
+  const customKeys = Object.keys(customData);
 
   const handleCustomChange = (key: string, val: string) => {
-    onFieldChange('learned_fields', { ...customData, [key]: val });
+    onFieldChange('data_learned', { ...customData, [key]: val });
   };
 
   const handleCustomRename = (oldKey: string, newKey: string) => {
@@ -119,7 +121,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
     const newData = { ...customData };
     newData[newKey] = newData[oldKey];
     delete newData[oldKey];
-    onFieldChange('learned_fields', newData);
+    onFieldChange('data_learned', newData);
     // Remove the old flattened entry to prevent it being added back during save
     onFieldChange(oldKey, undefined);
   };
@@ -127,7 +129,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   const handleCustomDelete = (key: string) => {
     const newData = { ...customData };
     delete newData[key];
-    onFieldChange('learned_fields', newData);
+    onFieldChange('data_learned', newData);
     // Remove the flattened entry that could cause it to be added back during save
     onFieldChange(key, undefined); 
   };
@@ -211,12 +213,26 @@ export const ProfileForm: FC<ProfileFormProps> = ({
                   </div>
                   
                   {/* Editable Value */}
-                  <AutoResizeTextarea 
-                    value={(formData[field.name] as string) || ''}
-                    onChange={(e) => onFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder || `...`}
-                    className="text-white flex-1 py-1.5 min-w-0 placeholder:text-white/10 focus:bg-white/5 rounded px-2 -mx-2 transition-colors"
-                  />
+                  {field.type === 'textarea' ? (
+                    <AutoResizeTextarea 
+                      value={(formData[field.name] as string) || ''}
+                      onChange={(e) => onFieldChange(field.name, e.target.value)}
+                      readOnly={!!field.readOnly}
+                      placeholder={field.placeholder || `...`}
+                      aria-label={field.label}
+                      className={`text-white flex-1 py-1.5 min-w-0 placeholder:text-white/10 rounded px-2 -mx-2 transition-colors ${field.readOnly ? 'opacity-70 cursor-not-allowed' : 'focus:bg-white/5'}`}
+                    />
+                  ) : (
+                    <input 
+                      type={field.type}
+                      value={(formData[field.name] as string) || ''}
+                      onChange={(e) => onFieldChange(field.name, e.target.value)}
+                      readOnly={!!field.readOnly}
+                      placeholder={field.placeholder || `...`}
+                      aria-label={field.label}
+                      className={`text-white flex-1 py-1.5 min-w-0 placeholder:text-white/10 rounded px-2 -mx-2 transition-colors bg-transparent outline-none ${field.readOnly ? 'opacity-70 cursor-not-allowed' : 'focus:bg-white/5'}`}
+                    />
+                  )}
                   
                   {field.required && (
                     <div className="absolute right-0 top-3 opacity-30 select-none text-[10px] text-red-400 pr-2 pointer-events-none">

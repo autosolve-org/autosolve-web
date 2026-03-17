@@ -25,10 +25,14 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
   const processFile = async (file: File) => {
     if (!file) return;
     
-    // Check file type
+    // Validate by MIME first and by extension as fallback for browsers that omit MIME.
     const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!validTypes.includes(file.type)) {
-      alert('Por favor sube un archivo PDF o DOCX');
+    const lowerName = file.name.toLowerCase();
+    const hasValidExtension = lowerName.endsWith('.pdf') || lowerName.endsWith('.docx');
+    const hasValidMime = validTypes.includes((file.type || '').toLowerCase());
+
+    if (!hasValidMime && !hasValidExtension) {
+      alert('Por favor sube un archivo PDF o Word (.docx)');
       return;
     }
 
@@ -98,7 +102,7 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
             <span className="gradient-text">Completar con IA</span>
           </h3>
           <p className="text-[10px] text-text-secondary mb-2 leading-tight">
-            Arrastra tu CV aquí o haz click para subir
+            Arrastra tu CV aquí o haz click para subir (PDF o DOCX)
           </p>
           <Button 
             variant="secondary" 

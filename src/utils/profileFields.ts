@@ -4,6 +4,7 @@ export type ProfileField = {
   name: string;
   label: string;
   type: 'text' | 'email' | 'tel' | 'url' | 'textarea' | 'select' | 'date' | 'social';
+  readOnly?: boolean;
   placeholder?: string;
   required?: boolean;
   options?: string[]; // For select inputs
@@ -27,31 +28,18 @@ export const profileSections: ProfileSection[] = [
     required: true,
     fields: [
       {
-        name: 'names',
-        label: 'Nombres',
+        name: 'display_name',
+        label: 'Nombre de usuario',
         type: 'text',
-        placeholder: 'Juan Román',
-        required: true,
-      },
-      {
-        name: 'surnames',
-        label: 'Apellidos',
-        type: 'text',
-        placeholder: 'Pérez García',
+        readOnly: true,
         required: true,
       },
       {
         name: 'email',
-        label: 'Email Personal',
+        label: 'Email',
         type: 'email',
-        placeholder: 'juan@ejemplo.com',
+        readOnly: true,
         required: true,
-      },
-      {
-        name: 'phone_number',
-        label: 'Teléfono Móvil',
-        type: 'tel',
-        placeholder: '+51 987 654 321',
       }
     ],
   },
