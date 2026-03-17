@@ -8,6 +8,7 @@ import {
   type ProfileSection, 
   type ProfileField as ProfileFieldType 
 } from '../../utils/profileFields';
+import { formatLearnedTextarea, normalizeDataLearned, parseLearnedTextarea } from '../../utils/dataLearned';
 
 interface ProfileFormProps {
   activeSection: ProfileSection;
@@ -109,11 +110,13 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   const groupKeys = Object.keys(groupedFields);
 
   // Dynamic Fields
-  const customData = (formData.data_learned as Record<string, string>) || {};
+  const customData = normalizeDataLearned(formData.data_learned);
   const customKeys = Object.keys(customData);
 
   const handleCustomChange = (key: string, val: string) => {
-    onFieldChange('data_learned', { ...customData, [key]: val });
+    const options = parseLearnedTextarea(val);
+    onFieldChange('data_learned', { ...customData, [key]: options });
+    onFieldChange(key, options[0] || undefined);
   };
 
   const handleCustomRename = (oldKey: string, newKey: string) => {
@@ -122,6 +125,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
     newData[newKey] = newData[oldKey];
     delete newData[oldKey];
     onFieldChange('data_learned', newData);
+    onFieldChange(newKey, newData[newKey]?.[0] || undefined);
     // Remove the old flattened entry to prevent it being added back during save
     onFieldChange(oldKey, undefined);
   };
@@ -216,7 +220,12 @@ export const ProfileForm: FC<ProfileFormProps> = ({
                   {field.type === 'textarea' ? (
                     <AutoResizeTextarea 
                       value={(formData[field.name] as string) || ''}
-                      onChange={(e) => onFieldChange(field.name, e.target.value)}
+                      onChange={(e) => {
+                        onFieldChange(field.name, e.target.value);
+                        if (!field.readOnly) {
+                          onFieldChange('data_learned', { ...customData, [field.name]: parseLearnedTextarea(e.target.value) });
+                        }
+                      }}
                       readOnly={!!field.readOnly}
                       placeholder={field.placeholder || `...`}
                       aria-label={field.label}
@@ -226,7 +235,12 @@ export const ProfileForm: FC<ProfileFormProps> = ({
                     <input 
                       type={field.type}
                       value={(formData[field.name] as string) || ''}
-                      onChange={(e) => onFieldChange(field.name, e.target.value)}
+                      onChange={(e) => {
+                        onFieldChange(field.name, e.target.value);
+                        if (!field.readOnly) {
+                          onFieldChange('data_learned', { ...customData, [field.name]: parseLearnedTextarea(e.target.value) });
+                        }
+                      }}
                       readOnly={!!field.readOnly}
                       placeholder={field.placeholder || `...`}
                       aria-label={field.label}
@@ -269,7 +283,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
                <CustomFieldRow 
                  key={key} 
                  labelKey={key} 
-                 value={customData[key]} 
+                 value={formatLearnedTextarea(customData[key])} 
                  onChange={handleCustomChange}
                  onRename={handleCustomRename}
                  onDelete={handleCustomDelete}

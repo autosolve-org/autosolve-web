@@ -15,7 +15,7 @@ export interface ProfileDTO {
   cv_url?: string | null;
 
   // ── Unified Learned Data (profile + CV + extension learner) ──
-  data_learned?: Record<string, any> | null;
+  data_learned?: Record<string, string[]> | null;
 
   // ── User Preferences ──
   preferences?: Record<string, any> | null;

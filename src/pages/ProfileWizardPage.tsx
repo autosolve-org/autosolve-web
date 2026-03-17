@@ -4,6 +4,7 @@ import {
   profileSections,
   calculateOverallCompletion
 } from '../utils/profileFields';
+import { flattenDataLearned, normalizeDataLearned, promoteLearnedValue } from '../utils/dataLearned';
 import { api } from '../services/api';
 import { profileService } from '../services/profile.service';
 import { extensionBridge } from '../utils/extensionBridge';
@@ -44,8 +45,7 @@ export const ProfileWizardPage: FC = () => {
         let initialData = { ...user };
         const profile = await profileService.getActiveProfile();
         if (profile) {
-          // Flatten data_learned for the frontend form to easily read
-          const flatLearned = profile.data_learned || {};
+          const flatLearned = flattenDataLearned(profile.data_learned);
           initialData = { ...initialData, ...profile, ...flatLearned };
         }
         setFormData(initialData);
@@ -98,9 +98,8 @@ export const ProfileWizardPage: FC = () => {
     if (!user?.id) return;
     if (!silent) setIsSaving(true);
     try {
-        // 1. Map non-schema fields to data_learned
         const strictSQLKeys = ['id', 'user_id', 'cv_url', 'data_learned', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'email'];
-        const learnedPayload: Record<string, unknown> = { ...(data.data_learned as Record<string, unknown> || {}) };
+      const learnedPayload = normalizeDataLearned(data.data_learned);
       const payload: Record<string, unknown> = {
           data_learned: learnedPayload
       };
@@ -109,7 +108,12 @@ export const ProfileWizardPage: FC = () => {
           if (strictSQLKeys.includes(key)) {
               payload[key] = value;
           } else {
-            learnedPayload[key] = value;
+            const stringValue = String(value ?? '').trim();
+            if (!stringValue) {
+              delete learnedPayload[key];
+            } else {
+              Object.assign(learnedPayload, promoteLearnedValue(learnedPayload, key, stringValue));
+            }
           }
       }
 
@@ -137,8 +141,12 @@ export const ProfileWizardPage: FC = () => {
     try {
       const updatedProfile = await profileService.getActiveProfile(true); // force refresh
       if (updatedProfile && user?.id) {
-        setFormData(prev => ({ ...prev, ...updatedProfile }));
-        setOriginalData(prev => ({ ...prev, ...updatedProfile }));
+        const mergedProfile = {
+          ...updatedProfile,
+          ...flattenDataLearned(updatedProfile.data_learned)
+        };
+        setFormData(prev => ({ ...prev, ...mergedProfile }));
+        setOriginalData(prev => ({ ...prev, ...mergedProfile }));
         updateUser(updatedProfile);
         extensionBridge.refreshProfileCache();
       }
@@ -169,8 +177,16 @@ export const ProfileWizardPage: FC = () => {
             if (addr.postcode) updates.postal_code = addr.postcode;
             if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
 
-            const currentLearned = (formData.data_learned as Record<string, string>) || {};
-            const newData = { ...formData, data_learned: { ...currentLearned, ...updates } };
+            let currentLearned = normalizeDataLearned(formData.data_learned);
+            Object.entries(updates).forEach(([key, value]) => {
+              currentLearned = promoteLearnedValue(currentLearned, key, value);
+            });
+
+            const newData = {
+              ...formData,
+              ...updates,
+              data_learned: currentLearned,
+            };
             setFormData(newData);
             saveProfile(newData, true);
           }
