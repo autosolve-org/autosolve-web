@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 interface CVUploaderProps {
-  onUploadSuccess: () => void;
+  onUploadSuccess: (data: any) => void;
 }
 
 export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
@@ -39,8 +39,8 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
     setIsUploading(true);
     try {
       // Use the api service to upload
-      await api.uploadFile('/onboarding/parse-cv', file);
-      onUploadSuccess();
+      const result = await api.uploadFile<any>('/onboarding/parse-cv', file);
+      onUploadSuccess(result);
     } catch (error) {
       console.error('Error uploading CV:', error);
       alert('Hubo un error al procesar tu CV. Por favor intenta de nuevo.');

@@ -1,25 +1,32 @@
-export interface ProfileDTO {
-  id?: string;
-  user_id?: string;
+/**
+ * ProfileDTO represents the flat map of learned data (PII / Aliases).
+ */
+export type ProfileDTO = Record<string, string[]>;
 
-  // ── Documentation & Residence ──
-  national_id: string;
-  birth_date?: string | null;
-  address?: string | null;
-  district?: string | null;
-  city?: string | null;
-  country?: string | null;
-  postal_code?: string | null;
+/**
+ * PreferencesDTO represents the user's application configuration.
+ */
+export interface PreferencesDTO {
+  copilotSuggestions?: {
+    enabled?: boolean;
+    learnCustomFields?: boolean;
+    ghostText?: boolean;
+  };
+  aiModels?: {
+    suggestionsProvider?: string;
+    actionsProvider?: string;
+  };
+  visual?: {
+    showBorders?: boolean;
+    showButtons?: boolean;
+  };
+  [key: string]: any;
+}
 
-  // ── CV ──
-  cv_url?: string | null;
-
-  // ── Unified Learned Data (profile + CV + extension learner) ──
-  data_learned?: Record<string, string[]> | null;
-
-  // ── User Preferences ──
-  preferences?: Record<string, any> | null;
-
-  created_at?: string;
-  updated_at?: string;
+/**
+ * Combined structure for API communication or Full State
+ */
+export interface UserProfileResponse {
+  data_learned: ProfileDTO;
+  preferences: PreferencesDTO;
 }

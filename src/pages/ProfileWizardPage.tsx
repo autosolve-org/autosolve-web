@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, useCallback, type FC } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import {
   profileSections,
@@ -7,6 +7,7 @@ import {
 import { flattenDataLearned, normalizeDataLearned, promoteLearnedValue } from '../utils/dataLearned';
 import { api } from '../services/api';
 import { profileService } from '../services/profile.service';
+import { type UserProfileResponse } from '../models/profile.dto';
 import { extensionBridge } from '../utils/extensionBridge';
 
 // Components
@@ -37,25 +38,56 @@ export const ProfileWizardPage: FC = () => {
   });
   const [isLocating, setIsLocating] = useState(false);
 
-  // Load initial data
-  useEffect(() => {
-    async function loadProfile() {
-      if (!user?.id) return;
-      try {
-        let initialData = { ...user };
-        const profile = await profileService.getActiveProfile();
-        if (profile) {
-          const flatLearned = flattenDataLearned(profile.data_learned);
-          initialData = { ...initialData, ...profile, ...flatLearned };
-        }
-        setFormData(initialData);
-        setOriginalData(initialData);
-      } catch (error) {
-        console.error('Error loading profile:', error);
+  const loadProfile = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      let initialData = { ...user };
+      const combined = await profileService.getActiveProfile(true); // Force clear service cache
+      
+      if (combined) {
+        // 1. Flatten learned data onto the form for direct editing
+        const flatLearned = flattenDataLearned(combined.data_learned);
+        
+        // 2. Clear out the nested keys from the form if they exist, to avoid stale data
+        const rest = { ...initialData } as any;
+        delete rest.data_learned;
+        delete rest.preferences;
+        
+        initialData = { 
+            ...rest, 
+            ...flatLearned, 
+            data_learned: combined.data_learned || {}, // REQUIRED FOR DYNAMIC FIELDS
+            preferences: combined.preferences || {} 
+        };
       }
+      setFormData(initialData);
+      setOriginalData(initialData);
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Error loading profile:', error);
     }
-    loadProfile();
   }, [user]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  // Real-time Sync with Extension
+  useEffect(() => {
+    const handleSync = (event: MessageEvent) => {
+      if (event.data.type === 'AUTOSOLVE_CACHE_UPDATED') {
+        const keys = event.data.keys || [];
+        if (keys.includes('autosolve_profile_cache') || keys.includes('autosolve_alias_cache')) {
+          console.log('🔄 [Wizard] Extension cache updated, refreshing view...');
+          profileService.clearCache(); // Invalidate service cache
+          loadProfile();
+        }
+      }
+    };
+
+    window.addEventListener('message', handleSync);
+    return () => window.removeEventListener('message', handleSync);
+  }, [loadProfile]);
 
   // Update completion percentage
   useEffect(() => {
@@ -94,28 +126,36 @@ export const ProfileWizardPage: FC = () => {
     });
   };
 
-  const saveProfile = async (data: Record<string, unknown>, silent = false) => {
+  const saveProfile = async (data: Record<string, any>, silent = false, extraLearnedData: Record<string, string[]> = {}) => {
     if (!user?.id) return;
     if (!silent) setIsSaving(true);
     try {
-        const strictSQLKeys = ['id', 'user_id', 'cv_url', 'data_learned', 'preferences', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'email'];
-      const learnedPayload = normalizeDataLearned(data.data_learned);
-      const payload: Record<string, unknown> = {
-          data_learned: learnedPayload
+      // 1. Separate core config from dynamic learned data fields
+      const { preferences, data_learned, ...formFields } = data;
+      
+      // 2. Build learned map. Prioritize existing data_learned then overlay form fields
+      let learnedPayload: Record<string, string[]> = { 
+          ...normalizeDataLearned(data_learned || {}),
+          ...extraLearnedData 
       };
-
-      for (const [key, value] of Object.entries(data)) {
-          if (strictSQLKeys.includes(key)) {
-              payload[key] = value;
-          } else {
-            const stringValue = String(value ?? '').trim();
-            if (!stringValue) {
-              delete learnedPayload[key];
-            } else {
-              Object.assign(learnedPayload, promoteLearnedValue(learnedPayload, key, stringValue));
-            }
+      
+      // Ignore keys that belong strictly to SQL User or Prefs
+      const configKeys = ['preferences', 'data_learned', 'id', 'user_id', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'email', 'cv_url'];
+      
+      for (const [key, value] of Object.entries(formFields)) {
+          if (!configKeys.includes(key)) {
+              const stringValue = String(value ?? '').trim();
+              if (stringValue) {
+                  learnedPayload = promoteLearnedValue(learnedPayload, key, stringValue);
+              }
           }
       }
+
+      // 3. Build the final separated payload
+      const payload: UserProfileResponse = {
+          data_learned: learnedPayload,
+          preferences: preferences || {}
+      };
 
       await profileService.updateProfile(payload);
       updateUser(data);
@@ -135,23 +175,25 @@ export const ProfileWizardPage: FC = () => {
     }
   };
 
-  const handleCVUpload = async () => {
-    // The backend already updated the database with the CV data during the parse_cv request.
-    // So we just need to re-fetch the latest profile data from the server.
+  const handleCVUpload = async (parsedData: any) => {
+    if (!parsedData) return;
     try {
-      const updatedProfile = await profileService.getActiveProfile(true); // force refresh
-      if (updatedProfile && user?.id) {
-        const mergedProfile = {
-          ...updatedProfile,
-          ...flattenDataLearned(updatedProfile.data_learned)
-        };
-        setFormData(prev => ({ ...prev, ...mergedProfile }));
-        setOriginalData(prev => ({ ...prev, ...mergedProfile }));
-        updateUser(updatedProfile);
-        extensionBridge.refreshProfileCache();
-      }
+      // 1. Transform semi-flat CV data into a Record<string, string[]> (Aliases)
+      const cvLearned: Record<string, string[]> = {};
+      Object.entries(parsedData).forEach(([k, v]) => {
+          if (v) cvLearned[k] = [String(v)];
+      });
+
+      // 2. Overlay onto existing form
+      const flatCV = flattenDataLearned(cvLearned);
+      const newData = { ...formData, ...flatCV };
+      
+      setFormData(newData);
+      
+      // 3. Persist immediately to both API (Stateless) and Extension Cache
+      await saveProfile(newData, true, cvLearned);
     } catch (error) {
-      console.error('Error fetching updated profile after CV upload:', error);
+      console.error('Error handling CV upload:', error);
     }
   };
 
@@ -177,15 +219,9 @@ export const ProfileWizardPage: FC = () => {
             if (addr.postcode) updates.postal_code = addr.postcode;
             if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
 
-            let currentLearned = normalizeDataLearned(formData.data_learned);
-            Object.entries(updates).forEach(([key, value]) => {
-              currentLearned = promoteLearnedValue(currentLearned, key, value);
-            });
-
             const newData = {
               ...formData,
               ...updates,
-              data_learned: currentLearned,
             };
             setFormData(newData);
             saveProfile(newData, true);
