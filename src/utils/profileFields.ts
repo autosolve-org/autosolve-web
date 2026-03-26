@@ -29,7 +29,7 @@ export const profileSections: ProfileSection[] = [
     fields: [
       {
         name: 'display_name',
-        label: 'Nombre de usuario',
+        label: 'Usuario',
         type: 'text',
         readOnly: true,
         required: true,
@@ -43,7 +43,6 @@ export const profileSections: ProfileSection[] = [
       }
     ],
   },
-
 ];
 
 export function calculateSectionCompletion(

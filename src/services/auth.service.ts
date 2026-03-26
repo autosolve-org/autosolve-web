@@ -7,6 +7,8 @@ export interface User {
   id: string;
   email: string;
   display_name?: string;
+  given_name?: string;
+  family_name?: string;
   avatar_url?: string;
   onboarding_completed: boolean;
   plan: string;

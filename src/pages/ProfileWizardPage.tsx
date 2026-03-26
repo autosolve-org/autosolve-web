@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type FC } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { type User } from '../services/auth.service';
 import {
   profileSections,
   calculateOverallCompletion
@@ -12,7 +13,7 @@ import { extensionBridge } from '../utils/extensionBridge';
 
 // Components
 import {
-  User,
+  User as UserIcon,
   Briefcase,
   GraduationCap,
   MapPin
@@ -45,6 +46,14 @@ export const ProfileWizardPage: FC = () => {
       const combined = await profileService.getActiveProfile(true); // Force clear service cache
       
       if (combined) {
+        // Seed standard identity into learned data if it's not there, so it shows in "Info Adicional"
+        const seedKeys = ['email', 'given_name', 'family_name'] as const;
+        seedKeys.forEach(k => {
+          if (user[k as keyof User] && (!combined.data_learned[k] || combined.data_learned[k].length === 0)) {
+            combined.data_learned[k] = [String(user[k as keyof User])];
+          }
+        });
+
         // 1. Flatten learned data onto the form for direct editing
         const flatLearned = flattenDataLearned(combined.data_learned);
         
@@ -140,7 +149,7 @@ export const ProfileWizardPage: FC = () => {
       };
       
       // Ignore keys that belong strictly to SQL User or Prefs
-      const configKeys = ['preferences', 'data_learned', 'id', 'user_id', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'email', 'cv_url'];
+      const configKeys = ['preferences', 'data_learned', 'id', 'user_id', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'cv_url'];
       
       for (const [key, value] of Object.entries(formFields)) {
           if (!configKeys.includes(key)) {
@@ -260,11 +269,11 @@ export const ProfileWizardPage: FC = () => {
   const getSidebarIcon = (id: string, isActive: boolean) => {
     const props = { className: `w-4 h-4 ${isActive ? 'text-white' : 'text-text-muted transition-colors'}` };
     switch (id) {
-      case 'identity': return <User {...props} />;
+      case 'identity': return <UserIcon {...props} />;
       case 'location': return <MapPin {...props} />;
       case 'experience': return <Briefcase {...props} />;
       case 'education': return <GraduationCap {...props} />;
-      default: return <User {...props} />;
+      default: return <UserIcon {...props} />;
     }
   };
 
