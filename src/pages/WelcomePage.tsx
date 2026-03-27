@@ -19,7 +19,7 @@ export const WelcomePage: FC = () => {
               {user?.email}
             </span>
             <div className="w-7 h-7 rounded bg-accent-violet/20 flex items-center justify-center text-xs font-black text-accent-violet border border-accent-violet/30">
-              {user?.nombre?.[0] || 'U'}
+              {user?.display_name?.[0] || user?.given_name?.[0] || 'U'}
             </div>
          </div>
       </header>

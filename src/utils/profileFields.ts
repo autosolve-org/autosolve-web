@@ -14,6 +14,7 @@ export type ProfileField = {
 
 export type ProfileSection = {
   id: string;
+  title: string;
   description: string;
   icon: string;
   fields: ProfileField[];
@@ -23,6 +24,7 @@ export type ProfileSection = {
 export const profileSections: ProfileSection[] = [
   {
     id: 'identity',
+    title: 'Identidad',
     description: 'Datos personales básicos y métodos de contacto directo.',
     icon: '👤',
     required: true,

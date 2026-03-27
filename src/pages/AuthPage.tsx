@@ -5,7 +5,7 @@ import { GoogleSignInButton } from '../components/GoogleSignInButton';
 import { Terminal } from 'lucide-react';
 
 export const AuthPage: FC = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   // Handle automatic redirection when authenticated

@@ -70,7 +70,7 @@ export const authService = {
     profileService.clearCache();
     
     // Clear extension storage if available
-    if (window.chrome?.runtime?.id) {
+    if ((window as any).chrome?.runtime?.id) {
       try {
         window.postMessage({ type: 'AUTOSOLVE_LOGOUT' }, '*');
       } catch (error) {
