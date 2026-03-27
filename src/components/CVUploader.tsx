@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { api } from '../services/api';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 interface CVUploaderProps {
   onUploadSuccess: (data: any) => void;
@@ -23,18 +25,22 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
   const processFile = async (file: File) => {
     if (!file) return;
     
-    // Check file type
+    // Validate by MIME first and by extension as fallback for browsers that omit MIME.
     const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!validTypes.includes(file.type)) {
-      alert('Por favor sube un archivo PDF o DOCX');
+    const lowerName = file.name.toLowerCase();
+    const hasValidExtension = lowerName.endsWith('.pdf') || lowerName.endsWith('.docx');
+    const hasValidMime = validTypes.includes((file.type || '').toLowerCase());
+
+    if (!hasValidMime && !hasValidExtension) {
+      alert('Por favor sube un archivo PDF o Word (.docx)');
       return;
     }
 
     setIsUploading(true);
     try {
       // Use the api service to upload
-      const response = await api.uploadFile('/onboarding/parse-cv', file);
-      onUploadSuccess(response);
+      const result = await api.uploadFile<any>('/onboarding/parse-cv', file);
+      onUploadSuccess(result);
     } catch (error) {
       console.error('Error uploading CV:', error);
       alert('Hubo un error al procesar tu CV. Por favor intenta de nuevo.');
@@ -60,7 +66,7 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
 
   return (
     <div 
-      className={`relative overflow-hidden rounded-xl border-2 border-dashed p-6 transition-all duration-300 ${
+      className={`relative overflow-hidden rounded-xl border-2 border-dashed p-4 transition-all duration-300 ${
         isDragging 
           ? 'border-accent-cyan bg-bg-elevated' 
           : 'border-bg-tertiary hover:border-text-secondary'
@@ -69,7 +75,7 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <input
+      <Input
         type="file"
         ref={fileInputRef}
         onChange={handleFileSelect}
@@ -78,10 +84,10 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
       />
       
       {isUploading ? (
-        <div className="flex flex-col items-center justify-center py-4 animate-pulse">
-          <div className="text-4xl mb-2">⚡</div>
-          <p className="text-lg font-medium gradient-text">Analizando tu CV con IA...</p>
-          <p className="text-sm text-text-muted">Esto tomará unos segundos</p>
+        <div className="flex flex-col items-center justify-center py-2 animate-pulse">
+          <div className="text-3xl mb-1">⚡</div>
+          <p className="text-sm font-medium gradient-text">Analizando con IA...</p>
+          <p className="text-[10px] text-text-muted">Extrayendo datos...</p>
           <div className="w-full h-1 bg-bg-tertiary mt-4 rounded-full overflow-hidden">
             <div className="h-full bg-accent-gradient animate-shimmer w-full"></div>
           </div>
@@ -91,16 +97,20 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
           className="flex flex-col items-center justify-center cursor-pointer text-center"
           onClick={() => fileInputRef.current?.click()}
         >
-          <div className="text-4xl mb-2">📄</div>
-          <h3 className="text-lg font-bold mb-1">
+          <div className="text-3xl mb-1">📄</div>
+          <h3 className="text-sm font-bold mb-0.5">
             <span className="gradient-text">Completar con IA</span>
           </h3>
-          <p className="text-sm text-text-secondary mb-3">
+          <p className="text-[10px] text-text-secondary mb-2 leading-tight">
             Arrastra tu CV aquí o haz click para subir (PDF o DOCX)
           </p>
-          <button className="btn btn-secondary text-xs py-1 px-3">
-            Seleccionar archivo
-          </button>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            className="text-[10px] h-7 px-2.5"
+          >
+            Subir Archivo
+          </Button>
         </div>
       )}
     </div>

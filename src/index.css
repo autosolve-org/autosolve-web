@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   /* Colors - Deep Dark Palette */
@@ -32,25 +36,35 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
-  
+
   /* Shadows */
   --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.3);
-  
+
   /* Animations */
   --animate-float: float 6s ease-in-out infinite;
   --animate-fade-in: fadeIn 250ms ease-in;
   --animate-slide-up: slideUp 350ms ease-out;
   --animate-shimmer: shimmer 2s infinite;
   --animate-gradient: gradientShift 3s ease infinite;
+  --animate-blob: blob 10s infinite alternate;
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes slideUp {
@@ -65,13 +79,37 @@
   }
 
   @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
   }
 
   @keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
   }
 }
 
@@ -82,7 +120,11 @@
 */
 
 @utility gradient-text {
-  background: linear-gradient(135deg, var(--color-accent-violet), var(--color-accent-cyan));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-violet),
+    var(--color-accent-cyan)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -98,7 +140,7 @@
 @utility card {
   background: var(--color-bg-secondary);
   border-radius: var(--radius-lg);
-  padding: 2rem; /* p-8 equivalent from original css var(--spacing-xl) which was 2rem */
+  padding: 1.5rem;
   box-shadow: var(--shadow-md);
   transition-property: transform, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -114,9 +156,9 @@
    Tailwind buttons are usually composed of utilities, but we can provide a base class 
    to match the existing .btn usage in the app.
 */
- .btn {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-4 text-base font-medium rounded-md transition-all duration-200 cursor-pointer no-underline;
-  
+.btn {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 cursor-pointer no-underline;
+
   &:disabled {
     @apply opacity-50 cursor-not-allowed transform-none;
   }
@@ -146,7 +188,7 @@
 
 /* Form Styles */
 .input {
-  @apply w-full p-4 text-base text-text-primary bg-bg-tertiary border border-white/10 rounded-md transition-all duration-200;
+  @apply w-full p-3 text-sm text-text-primary bg-bg-tertiary border border-white/10 rounded-lg transition-all duration-200;
 
   &:focus {
     @apply outline-none border-accent-violet ring-4 ring-accent-violet/10;
@@ -158,17 +200,115 @@
 }
 
 .label {
-  @apply block mb-2 text-sm font-medium text-text-secondary;
+  @apply block mb-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted;
 }
 
 /* Global resets now handled by Tailwind base, but ensuring basics */
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   min-height: 100vh;
 }
 
 #root {
   min-height: 100vh;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #0a0a0f;
+  --foreground: #f8f9fa;
+  --card: #12121a;
+  --card-foreground: #f8f9fa;
+  --popover: #1a1a24;
+  --popover-foreground: #f8f9fa;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #22222e;
+  --secondary-foreground: #f8f9fa;
+  --muted: #1a1a24;
+  --muted-foreground: #6b7280;
+  --accent: #22222e;
+  --accent-foreground: #8b5cf6;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #8b5cf6;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+}
+
+.dark {
+  --background: #0a0a0f;
+  --foreground: #f8f9fa;
+  --card: #12121a;
+  --card-foreground: #f8f9fa;
+  --popover: #1a1a24;
+  --popover-foreground: #f8f9fa;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #22222e;
+  --secondary-foreground: #f8f9fa;
+  --muted: #1a1a24;
+  --muted-foreground: #6b7280;
+  --accent: #22222e;
+  --accent-foreground: #8b5cf6;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #8b5cf6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

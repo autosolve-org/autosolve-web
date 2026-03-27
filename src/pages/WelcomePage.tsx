@@ -1,73 +1,86 @@
 import { type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Terminal } from 'lucide-react';
 
 export const WelcomePage: FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4">
-      <div className="w-full max-w-2xl animate-slide-up">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            ¡Bienvenido, <span className="gradient-text">{user?.nombre || 'Usuario'}</span>! 🎉
-          </h1>
-          <p className="text-xl text-text-secondary">
-            Tu cuenta ha sido creada exitosamente.
-          </p>
+    <div className="font-mono text-[13px] animate-fade-in space-y-6">
+      <header className="flex justify-between items-center bg-bg-primary/90 p-4 border border-white/10 rounded-xl">
+         <div className="flex items-center gap-3 text-white/40 font-bold uppercase tracking-[0.2em] text-[11px]">
+            <Terminal className="w-4 h-4 text-accent-cyan" /> 
+            AutoSolve <span className="text-white/20">v1.0.0</span>
+         </div>
+         <div className="flex items-center gap-3">
+            <span className="text-[10px] uppercase font-black tracking-widest text-text-muted hidden sm:inline">
+              {user?.email}
+            </span>
+            <div className="w-7 h-7 rounded bg-accent-violet/20 flex items-center justify-center text-xs font-black text-accent-violet border border-accent-violet/30">
+              {user?.display_name?.[0] || user?.given_name?.[0] || 'U'}
+            </div>
+         </div>
+      </header>
+
+      <div className="bg-bg-primary/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden relative">
+        <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center gap-2 select-none">
+          <div className="flex gap-2 mr-4">
+            <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+          </div>
+          <div className="text-white/30 text-[11px] uppercase tracking-[0.2em] font-sans font-bold">
+             welcome.md
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Active Plan Card */}
-          <div className="card glass relative overflow-hidden border-accent-violet/30 shadow-glow">
-            <div className="absolute top-0 right-0 bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-bl-lg border-b border-l border-green-500/20">
-              ACTIVO ✅
-            </div>
-            
-            <div className="mb-6">
-              <h3 className="text-xl font-bold mb-2">⚡ Plan Free</h3>
-              <div className="text-3xl font-bold mb-1">$0 <span className="text-sm text-text-muted font-normal">/mes</span></div>
-            </div>
-
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-green-400">✓</span> 20 resoluciones/día
-              </li>
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-green-400">✓</span> Sugerencias Copilot
-              </li>
-              <li className="flex items-center gap-2 text-sm">
-                <span className="text-green-400">✓</span> 1 Perfil básico
-              </li>
-            </ul>
-
-            <a href="#" className="text-sm text-accent-cyan hover:text-accent-violet block text-center border-t border-white/5 pt-4">
-              ¿Necesitas más? Ver planes Pro →
-            </a>
-          </div>
-
-          {/* Next Steps */}
-          <div className="flex flex-col justify-center space-y-6">
-            <div className="space-y-4">
-              <p className="text-lg">
-                Para que AutoSolve pueda completar formularios por ti, necesitamos conocer un poco sobre tu experiencia.
+        <div className="p-6 md:p-8 space-y-8">
+           <div>
+              <div className="text-white/20 select-none mb-4 flex items-center gap-2">
+                <span className="text-accent-violet">#</span> System_Status
+              </div>
+              <div className="text-green-400 font-bold flex items-center gap-2 mb-2">
+                 [OK] AutoSolve initialized successfully.
+              </div>
+              <p className="text-white/60 leading-relaxed max-w-2xl">
+                 La extensión está activa y lista. Cuando visites cualquier formulario, detectará automáticamente los campos y te sugerirá las respuestas en base a tu perfil local configurado en la extensión, manteniendo completa privacidad y fricción casi nula.
               </p>
-              <p className="text-text-secondary text-sm">
-                Solo te tomará 2 minutos y podrás usar IA para completarlo automáticamente subiendo tu CV.
-              </p>
-            </div>
+           </div>
 
-            <button 
-              onClick={() => navigate('/profile')}
-              className="btn btn-primary w-full text-lg group"
-            >
-              Completar mi perfil
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </button>
-          </div>
+           <div className="flex flex-wrap gap-4 pt-4 border-t border-white/5">
+              <button 
+                onClick={() => navigate('/profile')}
+                className="py-2.5 px-5 bg-white/5 hover:bg-white/10 text-white rounded transition-colors flex items-center gap-2 border border-white/10"
+              >
+                <span className="text-accent-violet font-bold">{'>'}</span> ./edit_profile.sh
+              </button>
+              <button 
+                className="py-2.5 px-5 bg-accent-cyan/10 hover:bg-accent-cyan/20 text-accent-cyan rounded transition-colors flex items-center gap-2 border border-accent-cyan/20 font-bold"
+                onClick={(e) => e.preventDefault()}
+              >
+                <span className="text-white/40">$</span> test_demo_form
+              </button>
+           </div>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="bg-bg-primary/90 border border-white/10 rounded-xl p-6 hover:border-white/20 transition-colors">
+           <div className="text-white/20 select-none mb-3"><span className="text-accent-cyan">##</span> ANALYTICS</div>
+           <p className="text-white/50 text-[12px] leading-relaxed">
+             Próximamente: Métricas sobre la cantidad de caracteres ahorrados y formularios completados.
+           </p>
+        </div>
+        <div className="bg-bg-primary/90 border border-white/10 rounded-xl p-6 hover:border-accent-violet/30 transition-colors group">
+           <div className="text-white/20 select-none mb-3 group-hover:text-accent-violet transition-colors"><span className="text-accent-violet">##</span> UNLOCK_PRO</div>
+           <p className="text-white/50 text-[12px] leading-relaxed">
+             Funciones avanzadas: múltiples alias comerciales y AI-Gen Cover Letters en un click.
+           </p>
         </div>
       </div>
     </div>
   );
 };
+

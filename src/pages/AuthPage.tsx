@@ -2,9 +2,10 @@ import { useEffect, type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { Terminal } from 'lucide-react';
 
 export const AuthPage: FC = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   // Handle automatic redirection when authenticated
@@ -12,74 +13,68 @@ export const AuthPage: FC = () => {
     if (isAuthenticated && user) {
       console.log('User is authenticated, determining destination...');
       if (user.onboarding_completed) {
-        console.log('Onboarding completed, navigating to /dashboard');
-        navigate('/dashboard', { replace: true });
-      } else {
-        console.log('Onboarding pending, navigating to /welcome');
         navigate('/welcome', { replace: true });
+      } else {
+        navigate('/profile', { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleSuccess = async (credential: string) => {
-    console.log('Google Sign-In Success! Credential received.');
-    try {
-      await login(credential);
-      // Redirection is handled by the useEffect above
-      console.log('Login backend exchange successful');
-    } catch (error) {
-      console.error('Login failed during backend exchange:', error);
-      if (typeof error === 'object' && error !== null) {
-        console.error('Detailed Error:', JSON.stringify(error, null, 2));
-        // @ts-ignore
-        if (error.message) console.error('Error Message:', error.message);
-        // @ts-ignore
-        if (error.status) console.error('Error Status:', error.status);
-      }
-    }
-  };
-
-  const handleError = () => {
-    console.error('Google Sign-In Error');
-  };
-
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.1),transparent_70%)] animate-pulse"></div>
-        <div className="absolute -top-20 -right-20 w-96 h-96 bg-accent-violet opacity-20 blur-[100px] rounded-full animate-float"></div>
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-accent-cyan opacity-20 blur-[100px] rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
-
-      <div className="card glass z-10 w-full max-w-md mx-4 text-center p-8 backdrop-blur-md border border-white/5">
-        <div className="mb-8 relative">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-accent-gradient flex items-center justify-center shadow-glow">
-            <span className="text-3xl">⚡</span>
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] p-4 sm:p-8 font-mono relative">
+      <div className="w-full max-w-md bg-bg-primary/90 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-scale-in">
+        {/* macOS window controls mock */}
+        <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center justify-between select-none">
+          <div className="flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-[0_0_8px_rgba(234,179,8,0.4)]" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
           </div>
-          <h1 className="text-4xl font-bold mb-2 tracking-tight">
-            Auto<span className="gradient-text">Solve</span>
-          </h1>
-          <p className="text-text-secondary text-lg">
-            Tu asistente de formularios ya está instalado.
-            <br />
-            <span className="text-sm opacity-80">Solo falta un paso.</span>
-          </p>
+          <div className="text-white/30 text-[11px] uppercase tracking-[0.2em] font-sans font-bold flex items-center gap-2">
+             <Terminal className="w-3 h-3" /> login.sh
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex justify-center">
-            <GoogleSignInButton onSuccess={handleSuccess} onError={handleError} />
+        <div className="p-8 text-[13px] leading-relaxed">
+          <div className="mb-8">
+            <div className="text-accent-violet mb-2 leading-none font-bold">
+              <pre className="text-[10px] sm:text-[12px]">
+{`   _____        __       ____     __         
+  /  _  \\__ ___/  |_  ___\\_   \\   |  |___  __ 
+ /  /_\\  \\  |  \\   __\\/  _ \\/   /   |  \\  \\/ / 
+/    |    \\  |  /|  | (  <_> )   \\___|  |\\   /  
+\\____|__  /____/ |__|  \\____/\\____/____/ \\_/   
+        \\/                                   `}
+              </pre>
+            </div>
+            <div className="text-white/40 mt-6 flex gap-2">
+              <span className="text-accent-cyan">$</span>
+              <span className="typing-animation overflow-hidden whitespace-nowrap border-r-2 border-accent-cyan pr-1">
+                ./init-session --provider google
+              </span>
+            </div>
+            <p className="text-white/50 text-[11px] mt-4 max-w-xs">
+              Tu asistente de formularios ya está instalado. Inicia sesión para continuar.
+            </p>
           </div>
 
-          <p className="text-xs text-text-muted mt-8">
-            Al continuar, aceptas nuestros{' '}
-            <a href="#" className="hover:text-accent-cyan transition-colors">Términos de Servicio</a>
-            {' '}y{' '}
-            <a href="#" className="hover:text-accent-cyan transition-colors">Política de Privacidad</a>
-          </p>
+          <div className="space-y-6">
+            <div className="flex justify-start">
+              <GoogleSignInButton />
+            </div>
+
+            <div className="pt-8 border-t border-white/5">
+               <p className="text-[10px] text-white/30">
+                 Al continuar, aceptas nuestros{' '}
+                 <a href="#" className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors">Términos</a>
+                 {' // '}
+                 <a href="#" className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors">Privacidad</a>
+               </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+

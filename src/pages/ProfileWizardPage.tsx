@@ -1,182 +1,315 @@
-import { useState, useEffect, type FC } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, type FC } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { 
-  profileSections, 
-  calculateOverallCompletion, 
-  calculateSectionCompletion, 
-  areRequiredFieldsComplete 
+import { type User } from '../services/auth.service';
+import {
+  profileSections,
+  calculateOverallCompletion
 } from '../utils/profileFields';
+import { flattenDataLearned, normalizeDataLearned, promoteLearnedValue } from '../utils/dataLearned';
 import { api } from '../services/api';
+import { profileService } from '../services/profile.service';
+import { type UserProfileResponse } from '../models/profile.dto';
+import { extensionBridge } from '../utils/extensionBridge';
 
 // Components
-import { ProgressBar } from '../components/ProgressBar';
-import { CollapsibleSection } from '../components/CollapsibleSection';
-import { CVUploader } from '../components/CVUploader';
-import { MotivationalMessage } from '../components/MotivationalMessage';
+import {
+  User as UserIcon,
+  Briefcase,
+  GraduationCap,
+  MapPin
+} from 'lucide-react';
+
+// New Components
+import { ProfileForm } from '../components/profile-wizard/ProfileForm';
+import { ProfileWizardSidebar } from '../components/profile-wizard/ProfileWizardSidebar';
 
 export const ProfileWizardPage: FC = () => {
   const { user, updateUser } = useAuth();
-  const navigate = useNavigate();
-  
+
   // State
-  const [openSectionId, setOpenSectionId] = useState<string>(profileSections[0].id);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [originalData, setOriginalData] = useState<Record<string, unknown>>({});
+  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [completion, setCompletion] = useState(0);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState(profileSections[0].id);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    'Identidad': true
+  });
+  const [isLocating, setIsLocating] = useState(false);
 
-  // Load initial data
-  useEffect(() => {
-    async function loadProfile() {
-      if (!user?.id) return;
-      try {
-        // In a real app we would fetch the full profile here
-        // For now we'll just use user data if available
-        const initialData = { ...user };
-        setFormData(initialData);
-      } catch (error) {
-        console.error('Error loading profile:', error);
+  const loadProfile = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      let initialData = { ...user };
+      const combined = await profileService.getActiveProfile(true); // Force clear service cache
+      
+      if (combined) {
+        // Seed standard identity into learned data if it's not there, so it shows in "Info Adicional"
+        const seedKeys = ['email', 'given_name', 'family_name'] as const;
+        seedKeys.forEach(k => {
+          if (user[k as keyof User] && (!combined.data_learned[k] || combined.data_learned[k].length === 0)) {
+            combined.data_learned[k] = [String(user[k as keyof User])];
+          }
+        });
+
+        // 1. Flatten learned data onto the form for direct editing
+        const flatLearned = flattenDataLearned(combined.data_learned);
+        
+        // 2. Clear out the nested keys from the form if they exist, to avoid stale data
+        const rest = { ...initialData } as any;
+        delete rest.data_learned;
+        delete rest.preferences;
+        
+        initialData = { 
+            ...rest, 
+            ...flatLearned, 
+            data_learned: combined.data_learned || {}, // REQUIRED FOR DYNAMIC FIELDS
+            preferences: combined.preferences || {} 
+        };
       }
+      setFormData(initialData);
+      setOriginalData(initialData);
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Error loading profile:', error);
     }
-    loadProfile();
   }, [user]);
 
-  // Update completion percentage whenever form data changes
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  // Real-time Sync with Extension
+  useEffect(() => {
+    const handleSync = (event: MessageEvent) => {
+      if (event.data.type === 'AUTOSOLVE_CACHE_UPDATED') {
+        const keys = event.data.keys || [];
+        if (keys.includes('autosolve_profile_cache') || keys.includes('autosolve_alias_cache')) {
+          console.log('🔄 [Wizard] Extension cache updated, refreshing view...');
+          profileService.clearCache(); // Invalidate service cache
+          loadProfile();
+        }
+      }
+    };
+
+    window.addEventListener('message', handleSync);
+    return () => window.removeEventListener('message', handleSync);
+  }, [loadProfile]);
+
+  // Update completion percentage
   useEffect(() => {
     setCompletion(calculateOverallCompletion(formData));
-  }, [formData]);
 
-  const handleFieldChange = (name: string, value: string) => {
+    const hasChanged = () => {
+        const allKeys = new Set([...Object.keys(formData), ...Object.keys(originalData)]);
+        for (const key of allKeys) {
+            const val1 = formData[key];
+            const val2 = originalData[key];
+            if (val1 === val2) continue;
+            const v1 = (val1 === null || val1 === undefined) ? '' : val1;
+            const v2 = (val2 === null || val2 === undefined) ? '' : val2;
+            if (v1 === v2) continue;
+            if (typeof v1 === 'object' && typeof v2 === 'object') {
+                if (JSON.stringify(v1) !== JSON.stringify(v2)) return true;
+                continue;
+            }
+            return true;
+        }
+        return false;
+    };
+
+    setHasChanges(hasChanged());
+  }, [formData, originalData]);
+
+  const handleFieldChange = (name: string, value: unknown) => {
     setFormData(prev => {
-      const newData = { ...prev, [name]: value };
-      
-      // Debounce save (simplified for this implementation)
-      // in production use lodash.debounce or similar
-      const win = window as unknown as { saveTimeout: number | undefined };
-      if (win.saveTimeout) clearTimeout(win.saveTimeout);
-      win.saveTimeout = window.setTimeout(() => {
-        saveProfile(newData);
-      }, 1000);
-      
-      return newData;
+        const newData = { ...prev };
+        if (value === undefined) {
+            delete newData[name];
+        } else {
+            newData[name] = value;
+        }
+        return newData;
     });
   };
 
-  const saveProfile = async (data: Record<string, unknown>) => {
+  const saveProfile = async (data: Record<string, any>, silent = false, extraLearnedData: Record<string, string[]> = {}) => {
+    if (!user?.id) return;
+    if (!silent) setIsSaving(true);
+    try {
+      // 1. Separate core config from dynamic learned data fields
+      const { preferences, data_learned, ...formFields } = data;
+      
+      // 2. Build learned map. Prioritize existing data_learned then overlay form fields
+      let learnedPayload: Record<string, string[]> = { 
+          ...normalizeDataLearned(data_learned || {}),
+          ...extraLearnedData 
+      };
+      
+      // Ignore keys that belong strictly to SQL User or Prefs
+      const configKeys = ['preferences', 'data_learned', 'id', 'user_id', 'created_at', 'updated_at', 'onboarding_completed', 'avatar_url', 'display_name', 'google_id', 'is_active', 'last_login', 'plan', 'provider', 'cv_url'];
+      
+      for (const [key, value] of Object.entries(formFields)) {
+          if (!configKeys.includes(key)) {
+              const stringValue = String(value ?? '').trim();
+              if (stringValue) {
+                  learnedPayload = promoteLearnedValue(learnedPayload, key, stringValue);
+              }
+          }
+      }
+
+      // 3. Build the final separated payload
+      const payload: UserProfileResponse = {
+          data_learned: learnedPayload,
+          preferences: preferences || {}
+      };
+
+      await profileService.updateProfile(payload);
+      updateUser(data);
+      setOriginalData(data);
+      
+      // Tell the extension to fetch the newest profile version
+      extensionBridge.refreshProfileCache();
+      
+      if (!silent) {
+        setShowSaveSuccess(true);
+        setTimeout(() => setShowSaveSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving:', error);
+    } finally {
+      if (!silent) setIsSaving(false);
+    }
+  };
+
+  const handleCVUpload = async (parsedData: any) => {
+    if (!parsedData) return;
+    try {
+      // 1. Transform semi-flat CV data into a Record<string, string[]> (Aliases)
+      const cvLearned: Record<string, string[]> = {};
+      Object.entries(parsedData).forEach(([k, v]) => {
+          if (v) cvLearned[k] = [String(v)];
+      });
+
+      // 2. Overlay onto existing form
+      const flatCV = flattenDataLearned(cvLearned);
+      const newData = { ...formData, ...flatCV };
+      
+      setFormData(newData);
+      
+      // 3. Persist immediately to both API (Stateless) and Extension Cache
+      await saveProfile(newData, true, cvLearned);
+    } catch (error) {
+      console.error('Error handling CV upload:', error);
+    }
+  };
+
+  const handleDetectLocation = async () => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          const addr = data.address;
+
+          if (addr) {
+            const updates: Record<string, string> = {};
+            if (addr.country) updates.country = addr.country;
+            if (addr.city || addr.town || addr.village || addr.state) updates.city = addr.city || addr.town || addr.village || addr.state;
+            if (addr.suburb || addr.neighbourhood || addr.city_district) updates.district = addr.suburb || addr.neighbourhood || addr.city_district;
+            if (addr.postcode) updates.postal_code = addr.postcode;
+            if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
+
+            const newData = {
+              ...formData,
+              ...updates,
+            };
+            setFormData(newData);
+            saveProfile(newData, true);
+          }
+        } catch (error) {
+          console.error("Error detecting location:", error);
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLocating(false);
+      }
+    );
+  };
+
+  const handleSubmit = async () => {
     if (!user?.id) return;
     setIsSaving(true);
     try {
-      await api.put(`/users/profiles/${user.id}`, data);
-      updateUser(data);
+      await api.patch('/users/me', { onboarding_completed: true });
+      await saveProfile(formData, false);
+      updateUser({ onboarding_completed: true });
     } catch (error) {
-      console.error('Error auto-saving:', error);
+      console.error('Error completing profile:', error);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleCVUpload = (parsedData: Record<string, unknown>) => {
-    // Merge parsed data with existing form data
-    const newData = { ...formData, ...parsedData };
-    setFormData(newData);
-    saveProfile(newData);
-    
-    // Show success feedback logic could go here
-    setOpenSectionId('personal'); // Reset to first section to review
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  const handleSubmit = async () => {
-    if (!user?.id) return;
-    
-    try {
-      // Mark onboarding as completed
-      await api.patch('/users/me', { onboarding_completed: true });
-      updateUser({ onboarding_completed: true });
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error completing onboarding:', error);
-      alert('Hubo un error al finalizar. Por favor intenta de nuevo.');
+  const getSidebarIcon = (id: string, isActive: boolean) => {
+    const props = { className: `w-4 h-4 ${isActive ? 'text-white' : 'text-text-muted transition-colors'}` };
+    switch (id) {
+      case 'identity': return <UserIcon {...props} />;
+      case 'location': return <MapPin {...props} />;
+      case 'experience': return <Briefcase {...props} />;
+      case 'education': return <GraduationCap {...props} />;
+      default: return <UserIcon {...props} />;
     }
   };
 
+  const activeSection = profileSections.find(s => s.id === activeSectionId) || profileSections[0];
+
   return (
-    <div className="min-h-screen bg-bg-primary pb-20">
-      <div className="container max-w-3xl pt-8">
-        
-        {/* Header */}
-        <div className="mb-8 sticky top-0 bg-bg-primary/95 backdrop-blur z-20 py-4 border-b border-white/5">
-          <div className="flex justify-between items-end mb-4">
-            <h1 className="text-2xl font-bold m-0">
-              Completa tu perfil
-            </h1>
-            <div className="text-xs text-text-muted">
-              {isSaving ? 'Guardando...' : 'Guardado automático'}
-            </div>
-          </div>
-          <ProgressBar progress={completion} />
+    <div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <ProfileForm
+            activeSection={activeSection}
+            formData={formData}
+            onFieldChange={handleFieldChange}
+            expandedGroups={expandedGroups}
+            onToggleGroup={toggleGroup}
+            isLocating={isLocating}
+            onDetectLocation={handleDetectLocation}
+            isSaving={isSaving}
+            showSaveSuccess={showSaveSuccess}
+          />
+          
         </div>
 
-        {/* CV Uploader Banner */}
-        <div className="mb-8">
-          <CVUploader onUploadSuccess={handleCVUpload} />
-          <MotivationalMessage />
-        </div>
-
-        {/* Wizard Sections */}
-        <div className="space-y-4">
-          {profileSections.map((section) => (
-            <CollapsibleSection
-              key={section.id}
-              section={section}
-              isOpen={openSectionId === section.id}
-              onToggle={() => setOpenSectionId(openSectionId === section.id ? '' : section.id)}
-              completion={calculateSectionCompletion(section, formData)}
-            >
-              <div className="p-4 grid gap-4 grid-cols-1 md:grid-cols-2">
-                {section.fields.map((field) => (
-                  <div key={field.name} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
-                    <label className="label">
-                      {field.label} {field.required && <span className="text-accent-cyan">*</span>}
-                    </label>
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        className="input min-h-[100px] resize-y"
-                        placeholder={field.placeholder}
-                        value={(formData[field.name] as string) || ''}
-                        onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                      />
-                    ) : (
-                      <input
-                        type={field.type}
-                        className="input"
-                        placeholder={field.placeholder}
-                        value={(formData[field.name] as string) || ''}
-                        onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CollapsibleSection>
-          ))}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="fixed bottom-0 left-0 w-full p-4 bg-bg-secondary border-t border-white/10 z-30">
-          <div className="container max-w-3xl flex justify-between items-center">
-            <span className="text-sm text-text-muted hidden md:inline">
-              Podrás editar esto más tarde
-            </span>
-            <button
-              onClick={handleSubmit}
-              disabled={!areRequiredFieldsComplete(formData)}
-              className="btn btn-primary w-full md:w-auto"
-            >
-              ¡Listo, vámonos! 🚀
-            </button>
-          </div>
-        </div>
+        <ProfileWizardSidebar
+          activeSectionId={activeSectionId}
+          setActiveSectionId={setActiveSectionId}
+          completion={completion}
+          isSaving={isSaving}
+          hasChanges={hasChanges}
+          formData={formData}
+          handleCVUpload={handleCVUpload}
+          handleSubmit={handleSubmit}
+          getSidebarIcon={getSidebarIcon}
+        />
       </div>
     </div>
   );
 };
+
