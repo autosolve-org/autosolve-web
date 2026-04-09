@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { api } from '../services/api';
+import type { ApiError } from '../services/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { toast } from 'sonner';
 
 interface CVUploaderProps {
   onUploadSuccess: (data: any) => void;
@@ -37,13 +39,51 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
     }
 
     setIsUploading(true);
+    const toastId = toast.loading('Analizando CV con IA...', {
+      description: 'Extrayendo datos estructurados de tu perfil'
+    });
+
     try {
-      // Use the api service to upload
       const result = await api.uploadFile<any>('/onboarding/parse-cv', file);
+      
+      // Check if result has any data
+      const hasData = Object.values(result).some(v => v !== null && v !== '');
+      
+      if (!hasData) {
+        toast.warning('No se pudo extraer mucha información', {
+          id: toastId,
+          description: 'Asegúrate de que el archivo sea legible o intenta con otro.'
+        });
+      } else {
+        toast.success('¡CV Procesado!', {
+          id: toastId,
+          description: 'Datos extraídos correctamente.'
+        });
+      }
+      
       onUploadSuccess(result);
     } catch (error) {
       console.error('Error uploading CV:', error);
-      alert('Hubo un error al procesar tu CV. Por favor intenta de nuevo.');
+      const apiError = error as ApiError;
+      
+      let errorMessage = 'Hubo un error al procesar tu CV.';
+      let description = 'Por favor intenta de nuevo más tarde.';
+
+      if (apiError.status === 413) {
+        errorMessage = 'Archivo demasiado grande';
+        description = 'El límite máximo es de 5MB.';
+      } else if (apiError.status === 400) {
+        errorMessage = 'Formato no soportado';
+        description = 'Asegúrate de subir un PDF o Word válido.';
+      } else if (apiError.status === 500) {
+        errorMessage = 'Error del servidor';
+        description = 'Nuestro motor de IA está teniendo dificultades. Reintenta en unos momentos.';
+      }
+
+      toast.error(errorMessage, {
+        id: toastId,
+        description
+      });
     } finally {
       setIsUploading(false);
     }
@@ -81,6 +121,7 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
         onChange={handleFileSelect}
         accept=".pdf,.docx"
         className="hidden"
+        data-testid="cv-file-input"
       />
       
       {isUploading ? (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type FC } from 'react';
+import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { type User } from '../services/auth.service';
 import {
@@ -207,44 +208,70 @@ export const ProfileWizardPage: FC = () => {
   };
 
   const handleDetectLocation = async () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      toast.error('La geolocalización no es compatible con este navegador.');
+      return;
+    }
+    
     setIsLocating(true);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          // Agregamos email para cumplir con las políticas de uso de Nominatim
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&email=support@autosolve.app`
           );
+          
+          if (!response.ok) throw new Error('Error al conectar con el servicio de mapas');
+          
           const data = await response.json();
           const addr = data.address;
 
           if (addr) {
             const updates: Record<string, string> = {};
             if (addr.country) updates.country = addr.country;
-            if (addr.city || addr.town || addr.village || addr.state) updates.city = addr.city || addr.town || addr.village || addr.state;
-            if (addr.suburb || addr.neighbourhood || addr.city_district) updates.district = addr.suburb || addr.neighbourhood || addr.city_district;
+            if (addr.city || addr.town || addr.village || addr.state) {
+              updates.city = addr.city || addr.town || addr.village || addr.state;
+            }
+            if (addr.suburb || addr.neighbourhood || addr.city_district) {
+              updates.district = addr.suburb || addr.neighbourhood || addr.city_district;
+            }
             if (addr.postcode) updates.postal_code = addr.postcode;
-            if (addr.road) updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
+            if (addr.road) {
+              updates.address = `${addr.road} ${addr.house_number || ''}`.trim();
+            }
 
             const newData = {
               ...formData,
               ...updates,
             };
+            
             setFormData(newData);
-            saveProfile(newData, true);
+            await saveProfile(newData, true);
+            toast.success('Ubicación autocompletada con éxito');
+          } else {
+            toast.warning('No se pudo determinar una dirección exacta');
           }
         } catch (error) {
           console.error("Error detecting location:", error);
+          toast.error('Hubo un fallo al obtener los detalles de ubicación');
         } finally {
           setIsLocating(false);
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
+        let msg = 'Error de ubicación desconocido';
+        if (error.code === error.PERMISSION_DENIED) msg = 'Permiso de ubicación denegado por el usuario';
+        if (error.code === error.POSITION_UNAVAILABLE) msg = 'La información de ubicación no está disponible';
+        if (error.code === error.TIMEOUT) msg = 'Tiempo de espera agotado al obtener la ubicación';
+        
+        toast.error(msg);
         setIsLocating(false);
-      }
+      },
+      { timeout: 10000 }
     );
   };
 

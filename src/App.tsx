@@ -1,6 +1,7 @@
 import { type FC, type ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { MainLayout } from './components/layout/MainLayout';
 
@@ -88,6 +89,7 @@ const App: FC = () => {
             <Route path="/" element={<Navigate to="/profile" replace />} />
           </Routes>
         </Router>
+        <Toaster position="top-right" expand={false} richColors closeButton />
       </AuthProvider>
     </GoogleOAuthProvider>
   );
