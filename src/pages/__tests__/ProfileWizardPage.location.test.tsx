@@ -38,14 +38,14 @@ describe('ProfileWizardPage Location Detection', () => {
     const mockGeolocation = {
       getCurrentPosition: vi.fn(),
     };
-    (global.navigator as any).geolocation = mockGeolocation;
+    (globalThis.navigator as any).geolocation = mockGeolocation;
     
     // Mock fetch
-    global.fetch = vi.fn();
+    globalThis.fetch = vi.fn() as any;
   });
 
   it('shows error toast when navigator.geolocation is missing', async () => {
-    (global.navigator as any).geolocation = undefined;
+    (globalThis.navigator as any).geolocation = undefined;
     
     render(<ProfileWizardPage />);
     
@@ -57,12 +57,12 @@ describe('ProfileWizardPage Location Detection', () => {
 
   it('handles permission denied error', async () => {
     const mockGeolocation = {
-      getCurrentPosition: vi.fn((success, error) => error({
+      getCurrentPosition: vi.fn((_success, error) => error({
         code: 1, // PERMISSION_DENIED
         PERMISSION_DENIED: 1,
       })),
     };
-    (global.navigator as any).geolocation = mockGeolocation;
+    (globalThis.navigator as any).geolocation = mockGeolocation;
 
     render(<ProfileWizardPage />);
     
@@ -79,7 +79,7 @@ describe('ProfileWizardPage Location Detection', () => {
         coords: mockCoords,
       })),
     };
-    (global.navigator as any).geolocation = mockGeolocation;
+    (globalThis.navigator as any).geolocation = mockGeolocation;
 
     const mockAddress = {
       address: {
@@ -90,7 +90,7 @@ describe('ProfileWizardPage Location Detection', () => {
       }
     };
 
-    (global.fetch as any).mockResolvedValue({
+    (globalThis.fetch as any).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockAddress),
     });
