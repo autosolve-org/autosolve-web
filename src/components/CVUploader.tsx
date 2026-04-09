@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { api, ApiError } from '../services/api';
+import { api } from '../services/api';
+import type { ApiError } from '../services/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
