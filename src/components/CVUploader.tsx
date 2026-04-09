@@ -120,6 +120,7 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
         onChange={handleFileSelect}
         accept=".pdf,.docx"
         className="hidden"
+        data-testid="cv-file-input"
       />
       
       {isUploading ? (
