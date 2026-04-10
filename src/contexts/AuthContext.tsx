@@ -101,6 +101,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
+  // Reactive Sync: Re-sync with extension whenever the tab becomes visible/focused
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user) {
+        console.log('AuthContext: Tab became visible. Re-syncing with extension...');
+        const accessToken = authService.getAccessToken();
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (accessToken && refreshToken) {
+          extensionBridge.syncTokens(accessToken, refreshToken, user);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Also trigger on window focus for extra reliability
+    window.addEventListener('focus', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+  }, [user]);
+
+  // Listen for explicit Sync Request from Extension (Deterministic Ping)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.source !== window) return;
+      if (event.data?.type === 'AUTOSOLVE_REQUEST_SYNC' && user) {
+        console.log('AuthContext: received explicit sync request from extension.');
+        const accessToken = authService.getAccessToken();
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (accessToken && refreshToken) {
+          extensionBridge.syncTokens(accessToken, refreshToken, user);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [user]);
+
+
   return (
     <AuthContext.Provider
       value={{

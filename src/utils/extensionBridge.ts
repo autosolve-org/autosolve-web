@@ -1,4 +1,4 @@
-// Extension bridge for chrome.storage sync
+// Extension bridge for direct chrome.runtime communication
 import type { User } from '../services/auth.service';
 
 export interface ExtensionBridge {
@@ -9,60 +9,83 @@ export interface ExtensionBridge {
 }
 
 class ChromeExtensionBridge implements ExtensionBridge {
+  private get extensionId(): string {
+    return import.meta.env.VITE_EXTENSION_ID || '';
+  }
+
   isExtensionPresent(): boolean {
-    // For postMessage method (Content Script bridge), we don't strictly need chrome.runtime.id
-    // to be visible in the main window context.
-    return true; 
+    // Check if chrome.runtime is available (usually only in extension context or if externally_connectable is set)
+    // However, since we are a web page, we check window.chrome?.runtime?.sendMessage
+    return !!(window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage);
   }
 
   syncTokens(accessToken: string, refreshToken: string, user: User | null = null): void {
-    if (!this.isExtensionPresent()) {
-      console.log('Extension not present, skipping token sync');
+    if (!accessToken || !refreshToken) {
+      console.log('Extension bridge: skipping sync (tokens are missing)');
+      return;
+    }
+
+    if (!this.isExtensionPresent() || !this.extensionId || this.extensionId === 'YOUR_EXTENSION_ID_HERE') {
+      console.log('Extension bridge: skipping sync (extensionId missing or not present)');
       return;
     }
 
     try {
-      // Send message to extension via postMessage
-      window.postMessage(
+      // Direct messaging to extension background script
+      window.chrome.runtime.sendMessage(
+        this.extensionId,
         {
-          type: 'AUTOSOLVE_AUTH',
-          payload: {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-            user: user,
-          },
+          type: 'AUTH_SUCCESS',
+          token: accessToken,
+          refreshToken: refreshToken,
+          user: user,
         },
-        '*'
+        (response) => {
+          if (window.chrome.runtime.lastError) {
+            console.warn('Extension sync error:', window.chrome.runtime.lastError.message);
+          } else {
+            console.log('Tokens synced with extension:', response);
+          }
+        }
       );
-      console.log('Tokens synced with extension');
     } catch (error) {
       console.error('Failed to sync tokens with extension:', error);
     }
   }
 
   clearTokens(): void {
-    if (!this.isExtensionPresent()) {
+    if (!this.isExtensionPresent() || !this.extensionId || this.extensionId === 'YOUR_EXTENSION_ID_HERE') {
       return;
     }
 
     try {
-      window.postMessage(
-        {
-          type: 'AUTOSOLVE_LOGOUT',
-        },
-        '*'
+      window.chrome.runtime.sendMessage(
+        this.extensionId,
+        { action: 'clearAuth' },
+        (response) => {
+          if (!window.chrome.runtime.lastError) {
+            console.log('Logout synced with extension:', response);
+          }
+        }
       );
-      console.log('Logout synced with extension');
     } catch (error) {
       console.error('Failed to sync logout with extension:', error);
     }
   }
 
   refreshProfileCache(): void {
-    if (!this.isExtensionPresent()) return;
+    if (!this.isExtensionPresent() || !this.extensionId || this.extensionId === 'YOUR_EXTENSION_ID_HERE') {
+      return;
+    }
+
     try {
-      window.postMessage({ type: 'AUTOSOLVE_REFRESH_PROFILE' }, '*');
-      console.log('Profile cache refresh request sent to extension');
+      window.chrome.runtime.sendMessage(
+        this.extensionId,
+        { action: 'getProfile' },
+        () => {
+          console.log('Profile cache refresh request sent to extension');
+        }
+      );
     } catch (error) {
       console.error('Failed to request profile cache refresh:', error);
     }
