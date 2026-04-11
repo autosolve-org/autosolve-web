@@ -1,8 +1,8 @@
-import { useEffect, type FC } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { GoogleSignInButton } from '../components/GoogleSignInButton';
-import { Terminal } from 'lucide-react';
+import { useEffect, type FC } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
+import { Terminal } from "lucide-react";
 
 export const AuthPage: FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -11,12 +11,8 @@ export const AuthPage: FC = () => {
   // Handle automatic redirection when authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      console.log('User is authenticated, determining destination...');
-      if (user.onboarding_completed) {
-        navigate('/welcome', { replace: true });
-      } else {
-        navigate('/profile', { replace: true });
-      }
+      console.log("User is authenticated, determining destination...");
+      navigate("/welcome", { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -31,7 +27,7 @@ export const AuthPage: FC = () => {
             <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
           </div>
           <div className="text-white/30 text-[11px] uppercase tracking-[0.2em] font-sans font-bold flex items-center gap-2">
-             <Terminal className="w-3 h-3" /> login.sh
+            <Terminal className="w-3 h-3" /> login.sh
           </div>
         </div>
 
@@ -39,7 +35,7 @@ export const AuthPage: FC = () => {
           <div className="mb-8">
             <div className="text-accent-violet mb-2 leading-none font-bold">
               <pre className="text-[10px] sm:text-[12px]">
-{`   _____        __       ____     __         
+                {`   _____        __       ____     __         
   /  _  \\__ ___/  |_  ___\\_   \\   |  |___  __ 
  /  /_\\  \\  |  \\   __\\/  _ \\/   /   |  \\  \\/ / 
 /    |    \\  |  /|  | (  <_> )   \\___|  |\\   /  
@@ -54,7 +50,8 @@ export const AuthPage: FC = () => {
               </span>
             </div>
             <p className="text-white/50 text-[11px] mt-4 max-w-xs">
-              Tu asistente de formularios ya está instalado. Inicia sesión para continuar.
+              Tu asistente de formularios ya está instalado. Inicia sesión para
+              continuar.
             </p>
           </div>
 
@@ -64,12 +61,22 @@ export const AuthPage: FC = () => {
             </div>
 
             <div className="pt-8 border-t border-white/5">
-               <p className="text-[10px] text-white/30">
-                 Al continuar, aceptas nuestros{' '}
-                 <a href="#" className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors">Términos</a>
-                 {' // '}
-                 <a href="#" className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors">Privacidad</a>
-               </p>
+              <p className="text-[10px] text-white/30">
+                Al continuar, aceptas nuestros{" "}
+                <a
+                  href="#"
+                  className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors"
+                >
+                  Términos
+                </a>
+                {" // "}
+                <a
+                  href="#"
+                  className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors"
+                >
+                  Privacidad
+                </a>
+              </p>
             </div>
           </div>
         </div>
@@ -77,4 +84,3 @@ export const AuthPage: FC = () => {
     </div>
   );
 };
-
