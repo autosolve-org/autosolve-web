@@ -8,6 +8,23 @@ export interface ExtensionBridge {
   refreshProfileCache(): void;
 }
 
+declare global {
+  interface Window {
+    chrome: {
+      runtime: {
+        sendMessage: (
+          extensionId: string,
+          message: any,
+          callback?: (response: any) => void
+        ) => void;
+        lastError?: {
+          message?: string;
+        };
+      };
+    };
+  }
+}
+
 class ChromeExtensionBridge implements ExtensionBridge {
   private get extensionId(): string {
     return import.meta.env.VITE_EXTENSION_ID || '';
@@ -40,7 +57,7 @@ class ChromeExtensionBridge implements ExtensionBridge {
           refreshToken: refreshToken,
           user: user,
         },
-        (response) => {
+        (response: any) => {
           if (window.chrome.runtime.lastError) {
             console.warn('Extension sync error:', window.chrome.runtime.lastError.message);
           } else {
@@ -62,7 +79,7 @@ class ChromeExtensionBridge implements ExtensionBridge {
       window.chrome.runtime.sendMessage(
         this.extensionId,
         { action: 'clearAuth' },
-        (response) => {
+        (response: any) => {
           if (!window.chrome.runtime.lastError) {
             console.log('Logout synced with extension:', response);
           }
