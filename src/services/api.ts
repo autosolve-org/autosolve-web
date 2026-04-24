@@ -10,8 +10,20 @@ export interface ApiError {
 
 class ApiClient {
   private getAuthToken(): string | null {
-    return localStorage.getItem('access_token');
+    // We try to get the session from localStorage directly or via the client
+    // Supabase stores it as 'sb-<project-id>-auth-token'
+    const storageKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+    if (storageKey) {
+      try {
+        const sessionData = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        return sessionData.access_token || null;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
   }
+
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {

@@ -1,28 +1,12 @@
 import { useEffect, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { useGoogleOneTapLogin } from '@react-oauth/google';
 import { GoogleSignInButton } from "../components/GoogleSignInButton";
 import { Terminal } from "lucide-react";
 
 export const AuthPage: FC = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
-
-  // Google One Tap Login (Automatic/One-click)
-  useGoogleOneTapLogin({
-    onSuccess: (credentialResponse) => {
-      if (credentialResponse.credential) {
-        console.log("One Tap Login success");
-        login(credentialResponse.credential);
-      }
-    },
-    onError: () => {
-      console.error("Google One Tap error");
-    },
-    disabled: isAuthenticated,
-    auto_select: true,
-  });
 
   // Handle automatic redirection when authenticated
   useEffect(() => {
