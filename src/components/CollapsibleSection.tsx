@@ -21,7 +21,7 @@ export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
   children
 }) => {
   return (
-    <Card className={`mb-3 transition-all duration-300 border-l-4 ${isOpen ? 'border-l-accent-violet' : 'border-l-transparent'}`}>
+    <Card className={`mb-3 transition-all duration-300 border-l-4 ${isOpen ? 'border-l-brand-primary' : 'border-l-transparent'}`}>
       <div 
         className="flex items-center justify-between cursor-pointer py-4 px-6"
         onClick={onToggle}
@@ -31,7 +31,7 @@ export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
           <div>
             <h3 className="text-base font-semibold m-0">{section.title}</h3>
             {!isOpen && (
-              <p className="text-[10px] text-text-secondary m-0">
+              <p className="text-[10px] text-dim m-0">
                 Click para editar
               </p>
             )}
@@ -41,8 +41,8 @@ export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
         <div className="flex items-center gap-3">
           <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
             completion.completed === completion.total 
-              ? 'bg-green-500/20 text-green-400' 
-              : 'bg-bg-tertiary text-text-secondary'
+              ? 'bg-success/20 text-success' 
+              : 'bg-surface-soft text-dim'
           }`}>
             {completion.completed}/{completion.total}
           </div>
@@ -57,7 +57,7 @@ export const CollapsibleSection: FC<CollapsibleSectionProps> = ({
           isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <CardContent className="pt-0 pb-6 px-6 border-t border-bg-tertiary/50">
+        <CardContent className="pt-0 pb-6 px-6 border-t border-surface-soft/50">
           <div className="pt-4">
              {children}
           </div>

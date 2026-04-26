@@ -68,9 +68,9 @@ const CustomFieldRow: FC<{
         onBlur={handleKeyBlur}
         aria-label="Clave de dato"
         placeholder="clave"
-        className="text-accent-cyan font-semibold bg-transparent outline-none w-[160px] md:w-[200px] shrink-0 py-1.5 focus:bg-white/5 rounded px-2 -ml-2 transition-colors"
+        className="text-brand-secondary font-semibold bg-transparent outline-none w-[160px] md:w-[200px] shrink-0 py-1.5 focus:bg-white/5 rounded px-2 -ml-2 transition-colors"
       />
-      <span className="text-accent-cyan/50 py-1.5 pr-3 select-none -ml-1">:</span>
+      <span className="text-brand-secondary/50 py-1.5 pr-3 select-none -ml-1">:</span>
       
       <AutoResizeTextarea 
         value={value}
@@ -81,7 +81,7 @@ const CustomFieldRow: FC<{
 
       <button 
         onClick={() => onDelete(labelKey)} 
-        className="text-red-400/50 hover:text-red-400 opacity-0 group-hover:opacity-100 p-1.5 ml-2 transition-opacity h-fit mt-0.5"
+        className="text-error/50 hover:text-error opacity-0 group-hover:opacity-100 p-1.5 ml-2 transition-opacity h-fit mt-0.5"
         title="Eliminar campo"
       >
         <X className="w-3.5 h-3.5" />
@@ -157,21 +157,21 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   };
 
   return (
-    <section className="bg-bg-primary/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden font-mono text-[13px] leading-relaxed relative animate-scale-in">
+    <section className="bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden font-mono text-[13px] leading-relaxed relative animate-scale-in">
       {/* OVERLAY */}
       {(isSaving || showSaveSuccess) && (
-        <div className="absolute inset-0 z-50 bg-bg-primary/80 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-300">
+        <div className="absolute inset-0 z-50 bg-surface/80 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-300">
           {isSaving ? (
              <div className="flex flex-col items-center gap-6">
-               <div className="w-12 h-12 border-4 border-accent-cyan/20 border-t-accent-cyan rounded-full animate-spin"></div>
-               <span className="text-accent-cyan font-bold tracking-[0.2em] font-sans text-sm animate-pulse">GUARDANDO...</span>
+               <div className="w-12 h-12 border-4 border-brand-secondary/20 border-t-brand-secondary rounded-full animate-spin"></div>
+               <span className="text-brand-secondary font-bold tracking-[0.2em] font-sans text-sm animate-pulse">GUARDANDO...</span>
              </div>
           ) : (
              <div className="flex flex-col items-center gap-6 animate-scale-in">
-               <div className="w-14 h-14 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+               <div className="w-14 h-14 bg-success/10 text-success rounded-full flex items-center justify-center border border-success/30 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
                  <Sparkles className="w-6 h-6" />
                </div>
-               <span className="text-green-400 font-bold tracking-[0.2em] font-sans text-sm">GUARDADO EXITOSO</span>
+               <span className="text-success font-bold tracking-[0.2em] font-sans text-sm">GUARDADO EXITOSO</span>
              </div>
           )}
         </div>
@@ -192,7 +192,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
       <div className="p-6 md:p-8">
         <div className="mb-8">
           <h1 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-            <span className="text-accent-violet">#</span> {activeSection.id}
+            <span className="text-brand-primary">#</span> {activeSection.id}
           </h1>
           <div className="text-white/40 text-[12px] uppercase tracking-wider font-bold">
             ## {activeSection.description}
@@ -203,7 +203,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
           <div key={groupName} className="mb-10 last:mb-0">
             {groupKeys.length > 1 && (
               <div className="text-white/20 select-none mb-4 flex items-center gap-2">
-                <span className="text-accent-violet hidden md:inline">##</span> {groupName}
+                <span className="text-brand-primary hidden md:inline">##</span> {groupName}
               </div>
             )}
             
@@ -211,9 +211,9 @@ export const ProfileForm: FC<ProfileFormProps> = ({
               {groupedFields[groupName].map(field => (
                 <div key={field.name} className="flex relative items-start -mx-4 px-4 rounded transition-colors py-1">
                   {/* Fixed Label - un-deletable text */}
-                  <div className="text-accent-violet select-none w-[160px] md:w-[200px] shrink-0 py-1.5 flex items-center font-semibold">
+                  <div className="text-brand-primary select-none w-[160px] md:w-[200px] shrink-0 py-1.5 flex items-center font-semibold">
                     {field.label}
-                    <span className="text-accent-violet/50 ml-1">:</span>
+                    <span className="text-brand-primary/50 ml-1">:</span>
                   </div>
                   
                   {/* Editable Value */}
@@ -249,7 +249,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
                   )}
                   
                   {field.required && (
-                    <div className="absolute right-0 top-3 opacity-30 select-none text-[10px] text-red-400 pr-2 pointer-events-none">
+                    <div className="absolute right-0 top-3 opacity-30 select-none text-[10px] text-error pr-2 pointer-events-none">
                       required
                     </div>
                   )}
@@ -271,7 +271,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({
             <button 
               onClick={onDetectLocation} 
               disabled={isLocating}
-              className="text-accent-cyan flex items-center gap-2 hover:bg-accent-cyan/10 px-3 py-1.5 rounded-lg transition-all bg-accent-cyan/5 border border-accent-cyan/20 w-fit shadow-lg shadow-accent-cyan/5 font-sans font-medium text-[11px]"
+              className="text-brand-secondary flex items-center gap-2 hover:bg-brand-secondary/10 px-3 py-1.5 rounded-lg transition-all bg-brand-secondary/5 border border-brand-secondary/20 w-fit shadow-lg shadow-brand-secondary/5 font-sans font-medium text-[11px]"
             >
                {isLocating ? <Sparkles className="w-3 h-3 animate-spin"/> : <MapPin className="w-3 h-3"/>}
                {isLocating ? 'Detectando...' : 'Autocompletar Ubicación'}
@@ -291,8 +291,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({
             ))}
 
             {/* New Line Input */}
-             <div className="flex relative items-start mt-4 bg-black/20 border border-dashed border-white/10 rounded-lg p-2.5 hover:border-accent-cyan/30 transition-colors focus-within:border-accent-cyan/50 focus-within:bg-accent-cyan/5">
-                <div className="text-accent-cyan/50 select-none shrink-0 mr-3 flex items-center font-bold">
+             <div className="flex relative items-start mt-4 bg-black/20 border border-dashed border-white/10 rounded-lg p-2.5 hover:border-brand-secondary/30 transition-colors focus-within:border-brand-secondary/50 focus-within:bg-brand-secondary/5">
+                <div className="text-brand-secondary/50 select-none shrink-0 mr-3 flex items-center font-bold">
                    +
                 </div>
                 <input 

@@ -32,16 +32,16 @@ export const ProfileWizardSidebar: FC<ProfileWizardSidebarProps> = ({
     <div className="space-y-6 lg:sticky lg:top-8 h-fit font-mono text-[13px] animate-fade-in">
       
       {/* Main Navigation Panel */}
-      <div className="bg-bg-primary/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden relative">
+      <div className="bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden relative">
         <div className="p-6 md:p-8">
 
            {/* Navigation Links */}
            <div className="mb-4">
               <div className="text-white/20 select-none mb-8 flex items-center justify-between">
-                <div className="text-white/30 text-[11px] font-sans font-bold uppercase tracking-widest flex items-center gap-1 select-none">
+                <div className="text-ghost text-[11px] font-sans font-bold uppercase tracking-widest flex items-center gap-1 select-none">
                   <ChevronDown className="w-3.5 h-3.5" /> SECTIONS
                 </div>
-                <div className={`${completion === 100 ? 'text-green-400' : 'text-accent-cyan'} font-bold`}>
+                <div className={`${completion === 100 ? 'text-success' : 'text-brand-secondary'} font-bold`}>
                   [{completion}%]
                 </div>
               </div>
@@ -58,7 +58,7 @@ export const ProfileWizardSidebar: FC<ProfileWizardSidebarProps> = ({
                      >
                        <div className="flex-1 flex gap-2 items-center">
                           <span className={isActive ? 'text-white' : ''}>
-                             <span className={isActive ? "text-accent-violet/50 mr-1" : "text-white/20 mr-1"}>#</span>
+                             <span className={isActive ? "text-brand-primary/50 mr-1" : "text-white/20 mr-1"}>#</span>
                              {section.id}
                           </span>
                        </div>
@@ -78,7 +78,7 @@ export const ProfileWizardSidebar: FC<ProfileWizardSidebarProps> = ({
               <button
                 onClick={handleSubmit}
                 disabled={isSaving || !hasChanges || !areRequiredFieldsComplete(formData)}
-                className="w-full py-3 px-4 bg-accent-violet/10 hover:bg-accent-violet/20 text-accent-violet text-xs font-sans font-bold uppercase tracking-widest rounded-lg border border-accent-violet/20 transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed group/save shadow-lg shadow-accent-violet/5"
+                className="w-full py-3 px-4 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary text-xs font-sans font-bold uppercase tracking-widest rounded-lg border border-brand-primary/20 transition-all flex items-center justify-center gap-3 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed group/save shadow-lg shadow-brand-primary/5"
               >
                 <Save className="w-4 h-4 group-hover/save:scale-110 transition-transform" />
                 {isSaving ? 'Guardando...' : './save_changes.sh'}
@@ -90,15 +90,15 @@ export const ProfileWizardSidebar: FC<ProfileWizardSidebarProps> = ({
       </div>
 
       {/* Magic Upload Terminal Block */}
-      <div className="bg-bg-primary/90 backdrop-blur-2xl border border-dashed border-accent-cyan/20 rounded-xl p-6 relative group hover:border-accent-cyan/50 transition-colors">
+      <div className="bg-surface/90 backdrop-blur-2xl border border-dashed border-brand-secondary/20 rounded-xl p-6 relative group hover:border-brand-secondary/50 transition-colors">
          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-            <Sparkles className="w-20 h-20 text-accent-cyan transform rotate-12" />
+            <Sparkles className="w-20 h-20 text-brand-secondary transform rotate-12" />
          </div>
 
-         <div className="text-accent-cyan mb-2 flex items-center gap-2 font-bold">
+         <div className="text-brand-secondary mb-2 flex items-center gap-2 font-bold">
             <span className="text-white/30">$</span> ./auto-fill-cv.sh
          </div>
-         <p className="text-white/40 text-[11px] mb-6 leading-relaxed">
+         <p className="text-ghost text-[11px] mb-6 leading-relaxed">
            ¿Tienes prisa? Sube tu CV y nuestra IA extraerá tus datos automáticamente en segundos.
          </p>
 

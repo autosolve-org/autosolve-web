@@ -294,7 +294,7 @@ export const ProfileWizardPage: FC = () => {
   };
 
   const getSidebarIcon = (id: string, isActive: boolean) => {
-    const props = { className: `w-4 h-4 ${isActive ? 'text-white' : 'text-text-muted transition-colors'}` };
+    const props = { className: `w-4 h-4 ${isActive ? 'text-white' : 'text-ghost transition-colors'}` };
     switch (id) {
       case 'identity': return <UserIcon {...props} />;
       case 'location': return <MapPin {...props} />;

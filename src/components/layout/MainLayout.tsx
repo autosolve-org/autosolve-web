@@ -8,7 +8,7 @@ interface MainLayoutProps {
 
 export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
   return (
-    <div className="flex h-screen bg-[#050505] overflow-hidden font-mono text-[13px] relative z-0">
+    <div className="flex h-screen bg-background overflow-hidden font-mono text-[13px] relative z-0">
       {/* Background Animated Orbs */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none w-full h-full opacity-60 flex items-center justify-center">
         {/* Spinning container that spans more than the screen to hide edges when spinning */}
@@ -33,10 +33,10 @@ export const MainLayout: FC<MainLayoutProps> = ({ children }) => {
       {/* Main Content Area */}
       <main className="flex-1 ml-0 lg:ml-60 flex flex-col min-w-0 bg-transparent relative overflow-y-auto overflow-x-hidden z-10">
         {/* Mobile Header - Responsive: visible below lg */}
-        <div className="lg:hidden flex items-center gap-4 p-4 border-b border-white/5 bg-bg-primary sticky top-0 z-30 justify-between">
+        <div className="lg:hidden flex items-center gap-4 p-4 border-b border-white/5 bg-surface sticky top-0 z-30 justify-between">
           <div className="flex items-center gap-3 font-bold text-white tracking-widest text-sm uppercase">
             <MobileSidebar />
-            <Terminal className="w-4 h-4 text-accent-cyan" /> Cognilot
+            <Terminal className="w-4 h-4 text-brand-secondary" /> Cognilot
           </div>
         </div>
 

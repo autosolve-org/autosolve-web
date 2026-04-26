@@ -33,18 +33,18 @@ export const PlansPage: FC = () => {
   return (
     <div className="max-w-4xl mx-auto py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Planes de Suscripción</h1>
-        <p className="text-white/60">Elige el plan que mejor se adapte a tus necesidades. (Modo de prueba)</p>
+        <h1 className="text-2xl font-bold text-main mb-2">Planes de Suscripción</h1>
+        <p className="text-dim">Elige el plan que mejor se adapte a tus necesidades. (Modo de prueba)</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded">
+        <div className="mb-6 p-4 bg-error/10 border border-error/20 text-error rounded">
           {error}
         </div>
       )}
 
       {successMsg && (
-        <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded">
+        <div className="mb-6 p-4 bg-success/10 border border-success/20 text-success rounded">
           {successMsg}
         </div>
       )}
@@ -65,31 +65,31 @@ export const PlansPage: FC = () => {
           )}
           
           <div className="flex items-center gap-3 mb-4 mt-2">
-            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-              <Star className="w-5 h-5 text-white/50" />
+            <div className="w-10 h-10 rounded-lg bg-surface-elevated flex items-center justify-center">
+              <Star className="w-5 h-5 text-ghost" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Free</h2>
-              <p className="text-sm text-white/40">Para uso básico y personal</p>
+              <h2 className="text-xl font-bold text-main">Free</h2>
+              <p className="text-sm text-ghost">Para uso básico y personal</p>
             </div>
           </div>
           
           <div className="my-6">
-            <span className="text-3xl font-bold text-white">$0</span>
-            <span className="text-white/40"> / mes</span>
+            <span className="text-3xl font-bold text-main">$0</span>
+            <span className="text-ghost"> / mes</span>
           </div>
 
           <ul className="space-y-3 mb-8 text-sm text-white/70">
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-success mt-0.5 shrink-0" />
               <span>Autocompletado de campos de texto simples</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-success mt-0.5 shrink-0" />
               <span>Soporte limitado a inputs básicos</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-success mt-0.5 shrink-0" />
               <span>Gestión de perfil único</span>
             </li>
           </ul>
@@ -111,42 +111,42 @@ export const PlansPage: FC = () => {
         <div 
           className={`relative p-6 rounded-xl border transition-all ${
             currentPlan === 'pro' 
-              ? 'bg-accent-violet/10 border-accent-violet border shadow-[0_0_30px_rgba(139,92,246,0.15)]' 
-              : 'bg-black/20 border-white/5 hover:border-accent-violet/30'
+              ? 'bg-brand-primary/10 border-brand-primary border shadow-[0_0_30px_rgba(139,92,246,0.15)]' 
+              : 'bg-black/20 border-white/5 hover:border-brand-primary/30'
           }`}
         >
           {currentPlan === 'pro' && (
-            <div className="absolute -top-3 left-6 flex items-center justify-center bg-accent-violet text-white text-[10px] font-bold uppercase py-1 px-3 rounded-full shadow-lg">
+            <div className="absolute -top-3 left-6 flex items-center justify-center bg-brand-primary text-white text-[10px] font-bold uppercase py-1 px-3 rounded-full shadow-lg">
               Plan Actual
             </div>
           )}
           
           <div className="flex items-center gap-3 mb-4 mt-2">
-            <div className="w-10 h-10 rounded-lg bg-accent-violet/20 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-accent-violet" />
+            <div className="w-10 h-10 rounded-lg bg-brand-primary/20 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-brand-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Pro</h2>
-              <p className="text-sm text-white/40">Para power users y profesionales</p>
+              <h2 className="text-xl font-bold text-main">Pro</h2>
+              <p className="text-sm text-ghost">Para power users y profesionales</p>
             </div>
           </div>
           
           <div className="my-6">
-            <span className="text-3xl font-bold text-white">$10</span>
-            <span className="text-white/40"> / mes</span>
+            <span className="text-3xl font-bold text-main">$10</span>
+            <span className="text-ghost"> / mes</span>
           </div>
 
           <ul className="space-y-3 mb-8 text-sm text-white/70">
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-accent-violet mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-brand-primary mt-0.5 shrink-0" />
               <span>Soporte avanzado para checkboxes, radios y selects</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-accent-violet mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-brand-primary mt-0.5 shrink-0" />
               <span>Reconocimiento de formularios complejos</span>
             </li>
             <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-accent-violet mt-0.5 shrink-0" />
+              <Check className="w-4 h-4 text-brand-primary mt-0.5 shrink-0" />
               <span>Prioridad en generación de inteligencia artificial</span>
             </li>
           </ul>
@@ -157,7 +157,7 @@ export const PlansPage: FC = () => {
             className={`w-full py-2.5 rounded font-mono text-sm font-bold uppercase transition-all ${
               currentPlan === 'pro'
                 ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                : 'bg-accent-violet hover:bg-accent-violet/80 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)]'
+                : 'bg-brand-primary hover:bg-brand-primary/80 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)]'
             }`}
           >
             {currentPlan === 'pro' ? 'Plan Actual' : 'Cambiar a Pro'}
