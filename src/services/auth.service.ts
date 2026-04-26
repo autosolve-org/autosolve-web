@@ -31,10 +31,10 @@ export const authService = {
     }
   },
 
-  async getCurrentUser(): Promise<User> {
+  async getCurrentUser(token?: string): Promise<User> {
     // We still call our backend /auth/me to get the local profile data
     // The ApiClient will automatically attach the Supabase JWT
-    return api.get<User>('/auth/me');
+    return api.get<User>('/auth/me', token);
   },
 
   async logout(): Promise<void> {

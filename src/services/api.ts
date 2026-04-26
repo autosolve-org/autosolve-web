@@ -9,9 +9,27 @@ export interface ApiError {
 }
 
 class ApiClient {
-  private getAuthToken(): string | null {
-    // We try to get the session from localStorage directly or via the client
-    // Supabase stores it as 'sb-<project-id>-auth-token'
+  private getAuthToken(explicitToken?: string): string | null {
+    if (explicitToken) return explicitToken;
+
+    // Use the specific project ID to avoid picking tokens from other projects
+    const projectUrl = import.meta.env.VITE_SUPABASE_URL || '';
+    const projectRef = projectUrl.match(/https:\/\/(.*?)\.supabase\.co/)?.[1];
+    
+    if (projectRef) {
+      const storageKey = `sb-${projectRef}-auth-token`;
+      const sessionStr = localStorage.getItem(storageKey);
+      if (sessionStr) {
+        try {
+          const sessionData = JSON.parse(sessionStr);
+          return sessionData.access_token || null;
+        } catch (e) {
+          console.error('ApiClient: Error parsing session data', e);
+        }
+      }
+    }
+
+    // Fallback to legacy discovery if projectRef is not found
     const storageKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
     if (storageKey) {
       try {
@@ -51,14 +69,14 @@ class ApiClient {
     return response.json();
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    const token = this.getAuthToken();
+  async get<T>(endpoint: string, token?: string): Promise<T> {
+    const authToken = this.getAuthToken(token);
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
     }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {

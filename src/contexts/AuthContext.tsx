@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       try {
         console.log('AuthContext: Session detected, fetching local profile...');
-        const userData = await authService.getCurrentUser();
+        const userData = await authService.getCurrentUser(session.access_token);
         setUser(userData);
         
         // Sync with extension
