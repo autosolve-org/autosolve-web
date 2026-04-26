@@ -20,6 +20,7 @@ interface ProfileFormProps {
   onDetectLocation: () => Promise<void>;
   isSaving: boolean;
   showSaveSuccess: boolean;
+  focusField?: string | null;
 }
 
 const AutoResizeTextarea: FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => {
@@ -98,7 +99,16 @@ export const ProfileForm: FC<ProfileFormProps> = ({
   onDetectLocation,
   isSaving,
   showSaveSuccess,
+  focusField,
 }) => {
+  const customSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (focusField === 'custom' && customSectionRef.current) {
+      customSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [focusField]);
+
   // Group fields if section has groups
   const groupedFields: Record<string, ProfileFieldType[]> = {};
   activeSection.fields.forEach(field => {
@@ -261,7 +271,10 @@ export const ProfileForm: FC<ProfileFormProps> = ({
 
 
         {/* JSONB / Dynamic Extra Information */}
-        <div className="mt-10 pt-8 border-t border-white/5 relative">
+        <div 
+          ref={customSectionRef}
+          className={`mt-10 pt-8 border-t border-white/5 relative transition-all duration-1000 ${focusField === 'custom' ? 'ring-2 ring-brand-secondary/50 rounded-xl p-4 bg-brand-secondary/5' : ''}`}
+        >
           <div className="text-white/20 select-none mb-6 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-white/10 font-bold tracking-wider">//</span>

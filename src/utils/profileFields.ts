@@ -45,6 +45,41 @@ export const profileSections: ProfileSection[] = [
       }
     ],
   },
+  {
+    id: 'location',
+    title: 'Localización',
+    description: 'Ubicación geográfica para filtros de búsqueda.',
+    icon: '📍',
+    required: false,
+    fields: [
+      { name: 'country', label: 'País', type: 'text' },
+      { name: 'city', label: 'Ciudad', type: 'text' },
+      { name: 'address', label: 'Dirección', type: 'text' }
+    ]
+  },
+  {
+    id: 'experience',
+    title: 'Experiencia',
+    description: 'Trayectoria profesional y rol actual.',
+    icon: '💼',
+    required: false,
+    fields: [
+      { name: 'current_company', label: 'Empresa Actual', type: 'text' },
+      { name: 'current_role', label: 'Rol Actual', type: 'text' },
+      { name: 'years_experience', label: 'Años de Experiencia', type: 'text' }
+    ]
+  },
+  {
+    id: 'education',
+    title: 'Educación',
+    description: 'Formación académica principal.',
+    icon: '🎓',
+    required: false,
+    fields: [
+      { name: 'degree', label: 'Título', type: 'text' },
+      { name: 'university', label: 'Institución', type: 'text' }
+    ]
+  }
 ];
 
 export function calculateSectionCompletion(

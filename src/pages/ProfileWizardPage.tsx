@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type FC } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { type User } from '../services/auth.service';
@@ -34,11 +35,25 @@ export const ProfileWizardPage: FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [completion, setCompletion] = useState(0);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState(profileSections[0].id);
+  const [searchParams] = useSearchParams();
+  const focusParam = searchParams.get('focus');
+  
+  const initialSection = profileSections.find(s => s.id === focusParam)?.id || profileSections[0].id;
+  const [activeSectionId, setActiveSectionId] = useState(initialSection);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     'Identidad': true
   });
   const [isLocating, setIsLocating] = useState(false);
+
+  // Update section if URL changes
+  useEffect(() => {
+    if (focusParam) {
+      const sectionExists = profileSections.find(s => s.id === focusParam);
+      if (sectionExists) {
+        setActiveSectionId(focusParam);
+      }
+    }
+  }, [focusParam]);
 
   const loadProfile = useCallback(async () => {
     if (!user?.id) return;
@@ -320,6 +335,7 @@ export const ProfileWizardPage: FC = () => {
             onDetectLocation={handleDetectLocation}
             isSaving={isSaving}
             showSaveSuccess={showSaveSuccess}
+            focusField={focusParam}
           />
           
         </div>

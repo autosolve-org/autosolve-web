@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Terminal } from 'lucide-react';
+import { OnboardingGuide } from '../components/OnboardingGuide';
 
 export const WelcomePage: FC = () => {
   const { user } = useAuth();
@@ -23,6 +24,8 @@ export const WelcomePage: FC = () => {
             </div>
          </div>
       </header>
+
+      <OnboardingGuide />
 
       <div className="bg-surface/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl overflow-hidden relative">
         <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center gap-2 select-none">
