@@ -18,14 +18,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   return (
     <div className="w-full">
       <div className="flex justify-between mb-1">
-        <span className="text-sm font-medium text-text-secondary">
+        <span className="text-sm font-medium text-dim">
           Tu progreso
         </span>
-        <span className="text-sm font-medium text-text-primary">
+        <span className="text-sm font-medium text-main">
           {progress}%
         </span>
       </div>
-      <div className="w-full bg-bg-elevated rounded-full h-2.5 overflow-hidden">
+      <div className="w-full bg-surface-elevated rounded-full h-2.5 overflow-hidden">
         <div 
           className="h-2.5 rounded-full transition-all duration-500 ease-out" 
           style={{ 

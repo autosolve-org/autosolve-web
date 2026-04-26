@@ -30,7 +30,7 @@ export const MotivationalMessage: React.FC = () => {
   return (
     <div className="py-4 text-center">
       <p 
-        className={`text-sm text-text-muted italic transition-opacity duration-500 ${
+        className={`text-sm text-ghost italic transition-opacity duration-500 ${
           fade ? 'opacity-100' : 'opacity-0'
         }`}
       >

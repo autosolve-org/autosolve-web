@@ -17,8 +17,8 @@ export const AuthPage: FC = () => {
   }, [isAuthenticated, user, navigate]);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#050505] p-4 sm:p-8 font-mono relative">
-      <div className="w-full max-w-md bg-bg-primary/90 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-scale-in">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 sm:p-8 font-mono relative">
+      <div className="w-full max-w-md bg-surface/90 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-scale-in">
         {/* macOS window controls mock */}
         <div className="px-5 py-4 border-b border-white/5 bg-white/5 flex items-center justify-between select-none">
           <div className="flex gap-2">
@@ -33,23 +33,23 @@ export const AuthPage: FC = () => {
 
         <div className="p-8 text-[13px] leading-relaxed">
           <div className="mb-8">
-            <div className="text-accent-violet mb-2 leading-none font-bold">
+            <div className="text-brand-primary mb-2 leading-none font-bold">
               <pre className="text-[10px] sm:text-[12px]">
-                {`   _____        __       ____     __         
-  /  _  \\__ ___/  |_  ___\\_   \\   |  |___  __ 
- /  /_\\  \\  |  \\   __\\/  _ \\/   /   |  \\  \\/ / 
-/    |    \\  |  /|  | (  <_> )   \\___|  |\\   /  
-\\____|__  /____/ |__|  \\____/\\____/____/ \\_/   
-        \\/                                   `}
+                {`   ______                      _  __      __  
+  / ____/____  ____ _ ____  (_) / /____ / /_ 
+ / /    / __ \\/ __ \`/ __ \\/ / / / __ \`/ / __/ 
+/ /___ / /_/ / /_/ // / / / / / / /_/ // /_   
+\\____/ \\____/\\__, //_/ /_/_/ /_/\\__,_/ \\__/   
+            /____/                            `}
               </pre>
             </div>
-            <div className="text-white/40 mt-6 flex gap-2">
-              <span className="text-accent-cyan">$</span>
-              <span className="typing-animation overflow-hidden whitespace-nowrap border-r-2 border-accent-cyan pr-1">
+            <div className="text-dim mt-6 flex gap-2">
+              <span className="text-brand-secondary">$</span>
+              <span className="typing-animation overflow-hidden whitespace-nowrap border-r-2 border-brand-secondary pr-1">
                 ./init-session --provider google
               </span>
             </div>
-            <p className="text-white/50 text-[11px] mt-4 max-w-xs">
+            <p className="text-ghost text-[11px] mt-4 max-w-xs">
               Tu asistente de formularios ya está instalado. Inicia sesión para
               continuar.
             </p>
@@ -62,17 +62,17 @@ export const AuthPage: FC = () => {
 
             <div className="pt-8 border-t border-white/5">
               <p className="text-[10px] text-white/30">
-                Al continuar, aceptas nuestros{" "}
+                // Al continuar, aceptas nuestros{" "}
                 <a
                   href="#"
-                  className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors"
+                  className="text-brand-secondary/60 hover:text-brand-secondary underline underline-offset-2 transition-colors"
                 >
                   Términos
                 </a>
-                {" // "}
+                {" y "}
                 <a
                   href="#"
-                  className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors"
+                  className="text-brand-secondary/60 hover:text-brand-secondary underline underline-offset-2 transition-colors"
                 >
                   Privacidad
                 </a>

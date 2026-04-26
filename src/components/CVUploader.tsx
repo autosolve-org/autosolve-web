@@ -108,8 +108,8 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
     <div 
       className={`relative overflow-hidden rounded-xl border-2 border-dashed p-4 transition-all duration-300 ${
         isDragging 
-          ? 'border-accent-cyan bg-bg-elevated' 
-          : 'border-bg-tertiary hover:border-text-secondary'
+          ? 'border-brand-secondary bg-surface-elevated' 
+          : 'border-surface-soft hover:border-white/20'
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -128,9 +128,9 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
         <div className="flex flex-col items-center justify-center py-2 animate-pulse">
           <div className="text-3xl mb-1">⚡</div>
           <p className="text-sm font-medium gradient-text">Analizando con IA...</p>
-          <p className="text-[10px] text-text-muted">Extrayendo datos...</p>
-          <div className="w-full h-1 bg-bg-tertiary mt-4 rounded-full overflow-hidden">
-            <div className="h-full bg-accent-gradient animate-shimmer w-full"></div>
+          <p className="text-[10px] text-ghost">Extrayendo datos...</p>
+          <div className="w-full h-1 bg-surface-soft mt-4 rounded-full overflow-hidden">
+            <div className="h-full bg-brand-gradient animate-shimmer w-full"></div>
           </div>
         </div>
       ) : (
@@ -142,7 +142,7 @@ export const CVUploader: React.FC<CVUploaderProps> = ({ onUploadSuccess }) => {
           <h3 className="text-sm font-bold mb-0.5">
             <span className="gradient-text">Completar con IA</span>
           </h3>
-          <p className="text-[10px] text-text-secondary mb-2 leading-tight">
+          <p className="text-[10px] text-dim mb-2 leading-tight">
             Arrastra tu CV aquí o haz click para subir (PDF o DOCX)
           </p>
           <Button 

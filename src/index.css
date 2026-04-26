@@ -1,35 +1,45 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-@custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Colors - Deep Dark Palette */
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #12121a;
-  --color-bg-tertiary: #1a1a24;
-  --color-bg-elevated: #22222e;
+  /* 1. Primitives - Core Colors */
+  --color-slate-1000: #050505;
+  --color-slate-950: #0a0a0f;
+  --color-slate-900: #12121a;
+  --color-slate-800: #1a1a24;
+  --color-slate-700: #22222e;
+  
+  --color-violet-500: #8b5cf6;
+  --color-cyan-500: #06b6d4;
 
-  /* Accent Gradient (Violet → Cyan) */
-  --color-accent-violet: #8b5cf6;
-  --color-accent-cyan: #06b6d4;
-  --color-accent-gradient: linear-gradient(
+  /* 2. Semantic Tokens - Usage Based */
+  --color-background: var(--color-slate-1000);
+  --color-surface: var(--color-slate-950);
+  --color-surface-soft: var(--color-slate-900);
+  --color-surface-elevated: var(--color-slate-800);
+
+  /* Brand Colors */
+  --color-brand-primary: var(--color-violet-500);
+  --color-brand-secondary: var(--color-cyan-500);
+  --background-image-brand-gradient: linear-gradient(
     135deg,
-    var(--color-accent-violet),
-    var(--color-accent-cyan)
+    var(--color-brand-primary),
+    var(--color-brand-secondary)
   );
 
-  /* Text Colors */
-  --color-text-primary: #f8f9fa;
-  --color-text-secondary: #b8bcc8;
-  --color-text-muted: #6b7280;
+  /* Text Tokens */
+  --color-main: #f8f9fa;
+  --color-dim: #b8bcc8;
+  --color-ghost: #6b7280;
 
-  /* Status Colors */
+  /* UI Feedback */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
+
+  /* Borders & Opacity Tokens */
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-strong: rgba(255, 255, 255, 0.1);
 
   /* Border Radius */
   --radius-sm: 0.375rem;
@@ -47,6 +57,13 @@
   --animate-shimmer: shimmer 2s infinite;
   --animate-gradient: gradientShift 3s ease infinite;
   --animate-blob: blob 10s infinite alternate;
+}
+
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
 
   @keyframes float {
     0%,
@@ -111,7 +128,6 @@
       transform: translate(0px, 0px) scale(1);
     }
   }
-}
 
 /* 
   Utility Classes
@@ -122,8 +138,8 @@
 @utility gradient-text {
   background: linear-gradient(
     135deg,
-    var(--color-accent-violet),
-    var(--color-accent-cyan)
+    var(--color-brand-primary),
+    var(--color-brand-secondary)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -138,7 +154,7 @@
 }
 
 @utility card {
-  background: var(--color-bg-secondary);
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
@@ -165,7 +181,7 @@
 }
 
 .btn-primary {
-  background: var(--color-accent-gradient);
+  background: var(--background-image-brand-gradient);
   color: white;
   box-shadow: var(--shadow-md);
 
@@ -176,37 +192,37 @@
 }
 
 .btn-secondary {
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+  color: var(--color-main);
   border: 1px solid rgba(255, 255, 255, 0.1);
 
   &:hover {
-    background: var(--color-bg-tertiary);
+    background: var(--color-surface-soft);
     border-color: rgba(255, 255, 255, 0.2);
   }
 }
 
 /* Form Styles */
 .input {
-  @apply w-full p-3 text-sm text-text-primary bg-bg-tertiary border border-white/10 rounded-lg transition-all duration-200;
+  @apply w-full p-3 text-sm text-main bg-surface-soft border border-white/10 rounded-lg transition-all duration-200;
 
   &:focus {
-    @apply outline-none border-accent-violet ring-4 ring-accent-violet/10;
+    @apply outline-none border-brand-primary ring-4 ring-brand-primary/10;
   }
 
   &::placeholder {
-    @apply text-text-muted;
+    @apply text-ghost;
   }
 }
 
 .label {
-  @apply block mb-1.5 text-[11px] font-bold uppercase tracking-wider text-text-muted;
+  @apply block mb-1.5 text-[11px] font-bold uppercase tracking-wider text-ghost;
 }
 
-/* Global resets now handled by Tailwind base, but ensuring basics */
+/* Global resets */
 body {
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  color: var(--color-main);
   font-family: "Inter", sans-serif;
   min-height: 100vh;
 }
@@ -258,24 +274,24 @@ body {
 
 :root {
   --radius: 0.625rem;
-  --background: #0a0a0f;
-  --foreground: #f8f9fa;
-  --card: #12121a;
-  --card-foreground: #f8f9fa;
-  --popover: #1a1a24;
-  --popover-foreground: #f8f9fa;
-  --primary: #8b5cf6;
+  --background: var(--color-slate-1000);
+  --foreground: var(--color-main);
+  --card: var(--color-slate-950);
+  --card-foreground: var(--color-main);
+  --popover: var(--color-slate-900);
+  --popover-foreground: var(--color-main);
+  --primary: var(--color-brand-primary);
   --primary-foreground: #ffffff;
-  --secondary: #22222e;
-  --secondary-foreground: #f8f9fa;
-  --muted: #1a1a24;
-  --muted-foreground: #6b7280;
-  --accent: #22222e;
-  --accent-foreground: #8b5cf6;
-  --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #8b5cf6;
+  --secondary: var(--color-slate-800);
+  --secondary-foreground: var(--color-main);
+  --muted: var(--color-slate-900);
+  --muted-foreground: var(--color-ghost);
+  --accent: var(--color-slate-800);
+  --accent-foreground: var(--color-brand-primary);
+  --destructive: var(--color-error);
+  --border: var(--color-border-strong);
+  --input: var(--color-border-strong);
+  --ring: var(--color-brand-primary);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -284,24 +300,24 @@ body {
 }
 
 .dark {
-  --background: #0a0a0f;
-  --foreground: #f8f9fa;
-  --card: #12121a;
-  --card-foreground: #f8f9fa;
-  --popover: #1a1a24;
-  --popover-foreground: #f8f9fa;
-  --primary: #8b5cf6;
+  --background: var(--color-slate-1000);
+  --foreground: var(--color-main);
+  --card: var(--color-slate-950);
+  --card-foreground: var(--color-main);
+  --popover: var(--color-slate-900);
+  --popover-foreground: var(--color-main);
+  --primary: var(--color-brand-primary);
   --primary-foreground: #ffffff;
-  --secondary: #22222e;
-  --secondary-foreground: #f8f9fa;
-  --muted: #1a1a24;
-  --muted-foreground: #6b7280;
-  --accent: #22222e;
-  --accent-foreground: #8b5cf6;
-  --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #8b5cf6;
+  --secondary: var(--color-slate-800);
+  --secondary-foreground: var(--color-main);
+  --muted: var(--color-slate-900);
+  --muted-foreground: var(--color-ghost);
+  --accent: var(--color-slate-800);
+  --accent-foreground: var(--color-brand-primary);
+  --destructive: var(--color-error);
+  --border: var(--color-border-strong);
+  --input: var(--color-border-strong);
+  --ring: var(--color-brand-primary);
 }
 
 @layer base {

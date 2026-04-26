@@ -4,6 +4,15 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { toast } from 'sonner';
 
 // Mocks
+vi.mock('../../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    },
+  },
+}));
+
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -102,7 +111,7 @@ describe('ProfileWizardPage Location Detection', () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('lat=40.7128&lon=-74.006&zoom=18&addressdetails=1&email=support@autosolve.app')
+        expect.stringContaining('lat=40.7128&lon=-74.006&zoom=18&addressdetails=1&email=support@cognilot.app')
       );
       expect(toast.success).toHaveBeenCalledWith('Ubicación autocompletada con éxito');
     });

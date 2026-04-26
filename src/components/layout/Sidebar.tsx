@@ -22,22 +22,21 @@ const SidebarContent: FC = () => {
   const navItems = [
     { label: 'welcome.md', path: '/welcome' },
     { label: 'profile.md', path: '/profile' },
-    { label: 'plan.md', path: '/plan' },
   ];
 
   return (
-    <div className="h-full flex flex-col font-mono text-[13px] bg-bg-primary border-r border-white/5">
+    <div className="h-full flex flex-col font-mono text-[13px] bg-background border-r border-white/5">
       {/* Brand Header */}
       <div className="p-4 border-b border-white/5 flex items-center gap-3">
-        <div className="w-5 h-5 flex items-center justify-center text-accent-cyan">
+        <div className="w-5 h-5 flex items-center justify-center text-brand-secondary">
            <Terminal className="w-5 h-5" />
         </div>
-        <span className="font-bold text-white tracking-widest text-sm uppercase">AutoSolve</span>
+        <span className="font-bold text-main tracking-widest text-sm uppercase">Cognilot</span>
       </div>
 
       <div className="p-4 flex-1">
          {/* Tree Explorer */}
-         <div className="text-white/30 text-[11px] font-sans font-bold uppercase tracking-widest mb-3 flex items-center gap-1 select-none">
+         <div className="text-ghost text-[11px] font-sans font-bold uppercase tracking-widest mb-3 flex items-center gap-1 select-none">
             <ChevronDown className="w-3.5 h-3.5" /> EXPLORER
          </div>
          
@@ -48,12 +47,12 @@ const SidebarContent: FC = () => {
                 to={item.path}
                 className={({ isActive }) => `
                   w-full text-left px-2 py-1.5 rounded flex items-center gap-2 transition-colors group
-                  ${isActive ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'}
+                  ${isActive ? 'bg-white/10 text-main' : 'text-dim hover:text-main'}
                 `}
               >
                 {({ isActive }) => (
                   <>
-                     <span className={`w-3.5 flex justify-center text-accent-violet ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-50 transition-opacity'}`}>
+                     <span className={`w-3.5 flex justify-center text-brand-primary ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-50 transition-opacity'}`}>
                         {'>'}
                      </span>
                      <span>{item.label}</span>
@@ -65,25 +64,25 @@ const SidebarContent: FC = () => {
 
          {/* Info Block */}
          <div className="mt-8">
-            <div className="text-white/30 text-[11px] font-sans font-bold uppercase tracking-widest mb-3 flex items-center gap-1 select-none">
+            <div className="text-ghost text-[11px] font-sans font-bold uppercase tracking-widest mb-3 flex items-center gap-1 select-none">
                 <ChevronDown className="w-3.5 h-3.5" /> SYSTEM
             </div>
             <div className="ml-2 space-y-0.5">
-               <div className="px-2 py-1.5 text-white/50 flex flex-col">
+               <div className="px-2 py-1.5 text-dim flex flex-col">
                   <span className="text-[10px] uppercase opacity-50 mb-1 font-bold">PLAN</span>
                   <div className="flex items-center gap-2">
-                     <span className={`font-bold ${user?.plan === 'pro' ? 'text-accent-violet' : 'text-white/70'}`}>
+                     <span className={`font-bold ${user?.plan === 'pro' ? 'text-brand-primary' : 'text-dim/70'}`}>
                         {user?.plan?.toUpperCase() || 'FREE'}
                      </span>
                      <button 
                         onClick={() => navigate('/plan')}
-                        className="bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-[10px] text-white transition-colors"
+                        className="bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-[10px] text-main transition-colors"
                      >
                         CHANGE
                      </button>
                   </div>
                </div>
-               <div className="px-2 py-1.5 text-white/50 flex flex-col mt-2">
+               <div className="px-2 py-1.5 text-dim flex flex-col mt-2">
                   <span className="text-[10px] uppercase opacity-50 mb-1 font-bold">USER</span>
                   <span className="truncate">{user?.email || 'Guest'}</span>
                </div>
@@ -95,7 +94,7 @@ const SidebarContent: FC = () => {
       <div className="p-4 border-t border-white/5">
          <button 
             onClick={handleLogout}
-            className="w-full text-left px-2 py-1.5 rounded flex items-center gap-2 transition-colors group text-white/50 hover:bg-red-500/10 hover:text-red-400"
+            className="w-full text-left px-2 py-1.5 rounded flex items-center gap-2 transition-colors group text-white/50 hover:bg-red-500/10 hover:text-error"
          >
             <span className="w-3.5 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                <LogOut className="w-3.5 h-3.5" />
@@ -123,7 +122,7 @@ export const MobileSidebar: FC = () => {
           <Menu className="w-5 h-5" />
         </button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64 bg-bg-primary border-r border-white/10 text-white" showCloseButton={false}>
+      <SheetContent side="left" className="p-0 w-64 bg-background border-r border-white/10 text-white" showCloseButton={false}>
          <SheetTitle className="sr-only">Menu de Navegación</SheetTitle>
          <SheetDescription className="sr-only">Barra lateral de navegación principal</SheetDescription>
          <div className="flex flex-col h-full">
