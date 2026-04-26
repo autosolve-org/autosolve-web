@@ -12,7 +12,7 @@ export const WelcomePage: FC = () => {
       <header className="flex justify-between items-center bg-bg-primary/90 p-4 border border-white/10 rounded-xl">
          <div className="flex items-center gap-3 text-white/40 font-bold uppercase tracking-[0.2em] text-[11px]">
             <Terminal className="w-4 h-4 text-accent-cyan" /> 
-            AutoSolve <span className="text-white/20">v1.0.0</span>
+            Cognilot <span className="text-white/20">v1.0.0</span>
          </div>
          <div className="flex items-center gap-3">
             <span className="text-[10px] uppercase font-black tracking-widest text-text-muted hidden sm:inline">
@@ -42,7 +42,7 @@ export const WelcomePage: FC = () => {
                 <span className="text-accent-violet">#</span> System_Status
               </div>
               <div className="text-green-400 font-bold flex items-center gap-2 mb-2">
-                 [OK] AutoSolve initialized successfully.
+                 [OK] Cognilot initialized successfully.
               </div>
               <p className="text-white/60 leading-relaxed max-w-2xl">
                  La extensión está activa y lista. Cuando visites cualquier formulario, detectará automáticamente los campos y te sugerirá las respuestas en base a tu perfil local configurado en la extensión, manteniendo completa privacidad y fricción casi nula.

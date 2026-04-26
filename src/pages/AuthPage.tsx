@@ -35,12 +35,12 @@ export const AuthPage: FC = () => {
           <div className="mb-8">
             <div className="text-accent-violet mb-2 leading-none font-bold">
               <pre className="text-[10px] sm:text-[12px]">
-                {`   _____        __       ____     __         
-  /  _  \\__ ___/  |_  ___\\_   \\   |  |___  __ 
- /  /_\\  \\  |  \\   __\\/  _ \\/   /   |  \\  \\/ / 
-/    |    \\  |  /|  | (  <_> )   \\___|  |\\   /  
-\\____|__  /____/ |__|  \\____/\\____/____/ \\_/   
-        \\/                                   `}
+                {`   ______                      _  __      __  
+  / ____/____  ____ _ ____  (_) / /____ / /_ 
+ / /    / __ \\/ __ \`/ __ \\/ / / / __ \`/ / __/ 
+/ /___ / /_/ / /_/ // / / / / / / /_/ // /_   
+\\____/ \\____/\\__, //_/ /_/_/ /_/\\__,_/ \\__/   
+            /____/                            `}
               </pre>
             </div>
             <div className="text-white/40 mt-6 flex gap-2">
@@ -62,14 +62,14 @@ export const AuthPage: FC = () => {
 
             <div className="pt-8 border-t border-white/5">
               <p className="text-[10px] text-white/30">
-                Al continuar, aceptas nuestros{" "}
+                // Al continuar, aceptas nuestros{" "}
                 <a
                   href="#"
                   className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors"
                 >
                   Términos
                 </a>
-                {" // "}
+                {" y "}
                 <a
                   href="#"
                   className="text-accent-cyan/60 hover:text-accent-cyan underline underline-offset-2 transition-colors"

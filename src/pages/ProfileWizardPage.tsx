@@ -221,7 +221,7 @@ export const ProfileWizardPage: FC = () => {
           const { latitude, longitude } = position.coords;
           // Agregamos email para cumplir con las políticas de uso de Nominatim
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&email=support@autosolve.app`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&email=support@cognilot.app`
           );
           
           if (!response.ok) throw new Error('Error al conectar con el servicio de mapas');

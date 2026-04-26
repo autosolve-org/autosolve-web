@@ -22,7 +22,6 @@ const SidebarContent: FC = () => {
   const navItems = [
     { label: 'welcome.md', path: '/welcome' },
     { label: 'profile.md', path: '/profile' },
-    { label: 'plan.md', path: '/plan' },
   ];
 
   return (
@@ -32,7 +31,7 @@ const SidebarContent: FC = () => {
         <div className="w-5 h-5 flex items-center justify-center text-accent-cyan">
            <Terminal className="w-5 h-5" />
         </div>
-        <span className="font-bold text-white tracking-widest text-sm uppercase">AutoSolve</span>
+        <span className="font-bold text-white tracking-widest text-sm uppercase">Cognilot</span>
       </div>
 
       <div className="p-4 flex-1">
