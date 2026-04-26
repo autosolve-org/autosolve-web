@@ -1,5 +1,5 @@
-// Google OAuth and JWT token management
-
+// Supabase Auth management
+import { supabase } from '../lib/supabase';
 import { api } from './api';
 import { profileService } from './profile.service';
 
@@ -14,57 +14,31 @@ export interface User {
   plan: string;
 }
 
-export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  user: User;
-}
-
 export const authService = {
-  async loginWithGoogle(credential: string): Promise<AuthResponse> {
-    console.log('authService: loginWithGoogle triggered');
-    console.log('authService: endpoint:', '/auth/google');
-    // Log safe version of credential
-    console.log('authService: token prefix:', credential.substring(0, 10) + '...');
+  async loginWithGoogle(): Promise<void> {
+    console.log('authService: loginWithGoogle triggered via Supabase');
     
-    const response = await api.post<AuthResponse>('/auth/google', {
-      google_token: credential,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/auth',
+      },
     });
     
-    console.log('authService: login request completed successfully');
-
-    // Store tokens
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
-
-    return response;
-  },
-
-  async getCurrentUser(): Promise<User> {
-    return api.get<User>('/auth/me');
-  },
-
-  async refreshToken(): Promise<AuthResponse> {
-    const refreshToken = localStorage.getItem('refresh_token');
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
+    if (error) {
+      console.error('authService: login error:', error.message);
+      throw error;
     }
-
-    const response = await api.post<AuthResponse>('/auth/refresh', {
-      refresh_token: refreshToken,
-    });
-
-    // Update tokens
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
-
-    return response;
   },
 
-  logout(): void {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+  async getCurrentUser(token?: string): Promise<User> {
+    // We still call our backend /auth/me to get the local profile data
+    // The ApiClient will automatically attach the Supabase JWT
+    return api.get<User>('/auth/me', token);
+  },
+
+  async logout(): Promise<void> {
+    await supabase.auth.signOut();
     
     // Clear profile cache on logout
     profileService.clearCache();
@@ -79,12 +53,14 @@ export const authService = {
     }
   },
 
-  getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+  async getAccessToken(): Promise<string | null> {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token || null;
   },
 
-  isAuthenticated(): boolean {
-    return !!this.getAccessToken();
+  async isAuthenticated(): Promise<boolean> {
+    const { data } = await supabase.auth.getSession();
+    return !!data.session;
   },
 
   async updateCurrentUser(updates: Partial<User>): Promise<User> {

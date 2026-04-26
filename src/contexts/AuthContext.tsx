@@ -1,13 +1,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
 import type { User } from '../services/auth.service';
 import { authService } from '../services/auth.service';
 import { extensionBridge } from '../utils/extensionBridge';
+import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credential: string) => Promise<void>;
+  login: () => Promise<void>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
 }
@@ -18,21 +20,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const login = async (credential: string) => {
-    console.log('AuthContext: starting login process...');
-    setIsLoading(true);
-    try {
-      console.log('AuthContext: calling authService.loginWithGoogle...');
-      const response = await authService.loginWithGoogle(credential);
-      console.log('AuthContext: login successful, user:', response.user.email);
-      setUser(response.user);
-      extensionBridge.syncTokens(response.access_token, response.refresh_token, response.user);
-    } catch (error) {
-      console.error('AuthContext: login failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+  const login = async () => {
+    await authService.loginWithGoogle();
   };
 
   const logout = () => {
@@ -47,75 +36,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Initialize auth state
-  useEffect(() => {
-    async function initAuth() {
-      console.log('AuthContext: initializing...');
-      
-      // 1. Check if we are returning from a Google redirect
-      const hash = window.location.hash;
-      console.log('AuthContext: current hash:', hash ? 'present' : 'empty');
-      
-      if (hash) {
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get('access_token');
+  // Sync session and local user profile
+  const syncUserSession = async (session: Session | null) => {
+    if (session) {
+      try {
+        console.log('AuthContext: Session detected, fetching local profile...');
+        const userData = await authService.getCurrentUser(session.access_token);
+        setUser(userData);
         
-        if (accessToken) {
-          console.log('AuthContext: Redirect token detected! Attempting login...');
-          try {
-            await login(accessToken);
-            console.log('AuthContext: Redirect login success. Cleaning URL...');
-            window.history.replaceState(null, '', window.location.pathname);
-            setIsLoading(false);
-            return;
-          } catch (error) {
-            console.error('AuthContext: Failed to login with redirect token:', error);
-          }
-        }
+        // Sync with extension
+        extensionBridge.syncTokens(
+          session.access_token,
+          session.refresh_token || '',
+          userData
+        );
+      } catch (error) {
+        console.error('AuthContext: Failed to fetch user profile:', error);
+        // If we can't get the profile, we might still have a session but it's unusable for our app
       }
-
-      // 2. Otherwise, check existing session
-      console.log('AuthContext: checking existing session...');
-      if (authService.isAuthenticated()) {
-        try {
-          const userData = await authService.getCurrentUser();
-          console.log('AuthContext: session found for:', userData.email);
-          setUser(userData);
-          // Sync tokens with extension if present
-          const accessToken = authService.getAccessToken();
-          const refreshToken = localStorage.getItem('refresh_token');
-          if (accessToken && refreshToken) {
-            extensionBridge.syncTokens(accessToken, refreshToken, userData);
-          }
-        } catch (error) {
-          console.error('AuthContext: Failed to fetch user from session:', error);
-          authService.logout();
-          setUser(null);
-        }
-      } else {
-        console.log('AuthContext: no existing session.');
-      }
-      setIsLoading(false);
+    } else {
+      setUser(null);
     }
+    setIsLoading(false);
+  };
 
-    initAuth();
+  useEffect(() => {
+    // 1. Initial check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      syncUserSession(session);
+    });
+
+    // 2. Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+      console.log('AuthContext: auth state change:', _event);
+      syncUserSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Reactive Sync: Re-sync with extension whenever the tab becomes visible/focused
   useEffect(() => {
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible' && user) {
-        console.log('AuthContext: Tab became visible. Re-syncing with extension...');
-        const accessToken = authService.getAccessToken();
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (accessToken && refreshToken) {
-          extensionBridge.syncTokens(accessToken, refreshToken, user);
+        const token = await authService.getAccessToken();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (token && session?.refresh_token) {
+          extensionBridge.syncTokens(token, session.refresh_token, user);
         }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    // Also trigger on window focus for extra reliability
     window.addEventListener('focus', handleVisibilityChange);
 
     return () => {
@@ -123,25 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('focus', handleVisibilityChange);
     };
   }, [user]);
-
-  // Listen for explicit Sync Request from Extension (Deterministic Ping)
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.source !== window) return;
-      if (event.data?.type === 'AUTOSOLVE_REQUEST_SYNC' && user) {
-        console.log('AuthContext: received explicit sync request from extension.');
-        const accessToken = authService.getAccessToken();
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (accessToken && refreshToken) {
-          extensionBridge.syncTokens(accessToken, refreshToken, user);
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [user]);
-
 
   return (
     <AuthContext.Provider
