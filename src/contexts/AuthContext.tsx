@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import type { User } from '../services/auth.service';
 import { authService } from '../services/auth.service';
 import { extensionBridge } from '../utils/extensionBridge';
+import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Sync session and local user profile
-  const syncUserSession = async (session: any) => {
+  const syncUserSession = async (session: Session | null) => {
     if (session) {
       try {
         console.log('AuthContext: Session detected, fetching local profile...');
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Sync with extension
         extensionBridge.syncTokens(
           session.access_token,
-          session.refresh_token,
+          session.refresh_token || '',
           userData
         );
       } catch (error) {
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // 2. Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       console.log('AuthContext: auth state change:', _event);
       syncUserSession(session);
     });
