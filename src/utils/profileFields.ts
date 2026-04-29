@@ -23,29 +23,6 @@ export type ProfileSection = {
 
 export const profileSections: ProfileSection[] = [
   {
-    id: 'identity',
-    title: 'Identidad',
-    description: 'Datos personales básicos y métodos de contacto directo.',
-    icon: '👤',
-    required: true,
-    fields: [
-      {
-        name: 'display_name',
-        label: 'Usuario',
-        type: 'text',
-        readOnly: true,
-        required: true,
-      },
-      {
-        name: 'email',
-        label: 'Email',
-        type: 'email',
-        readOnly: true,
-        required: true,
-      }
-    ],
-  },
-  {
     id: 'location',
     title: 'Localización',
     description: 'Ubicación geográfica para filtros de búsqueda.',

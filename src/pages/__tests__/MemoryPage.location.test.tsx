@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ProfileWizardPage } from '../ProfileWizardPage';
+import { MemoryPage } from '../MemoryPage';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { toast } from 'sonner';
 
@@ -39,7 +39,7 @@ vi.mock('../../services/profile.service', () => ({
   },
 }));
 
-describe('ProfileWizardPage Location Detection', () => {
+describe('MemoryPage Location Detection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
@@ -56,7 +56,7 @@ describe('ProfileWizardPage Location Detection', () => {
   it('shows error toast when navigator.geolocation is missing', async () => {
     (globalThis.navigator as any).geolocation = undefined;
     
-    render(<ProfileWizardPage />);
+    render(<MemoryPage />);
     
     const detectBtn = await screen.findByText(/Autocompletar Ubicación/i);
     fireEvent.click(detectBtn);
@@ -73,7 +73,7 @@ describe('ProfileWizardPage Location Detection', () => {
     };
     (globalThis.navigator as any).geolocation = mockGeolocation;
 
-    render(<ProfileWizardPage />);
+    render(<MemoryPage />);
     
     const detectBtn = await screen.findByText(/Autocompletar Ubicación/i);
     fireEvent.click(detectBtn);
@@ -104,7 +104,7 @@ describe('ProfileWizardPage Location Detection', () => {
       json: () => Promise.resolve(mockAddress),
     });
 
-    render(<ProfileWizardPage />);
+    render(<MemoryPage />);
     
     const detectBtn = await screen.findByText(/Autocompletar Ubicación/i);
     fireEvent.click(detectBtn);

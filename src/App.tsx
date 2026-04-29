@@ -6,7 +6,7 @@ import { MainLayout } from './components/layout/MainLayout';
 
 // Pages
 import { AuthPage } from './pages/AuthPage';
-import { ProfileWizardPage } from './pages/ProfileWizardPage';
+import { MemoryPage } from './pages/MemoryPage';
 import { WelcomePage } from './pages/WelcomePage';
 import { PlansPage } from './pages/PlansPage';
 
@@ -40,11 +40,11 @@ const App: FC = () => {
           {/* Protected Routes */}
 
           <Route
-            path="/profile"
+            path="/memory"
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <ProfileWizardPage />
+                  <MemoryPage />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -71,7 +71,7 @@ const App: FC = () => {
           />
 
           {/* Default Route */}
-          <Route path="/" element={<Navigate to="/profile" replace />} />
+          <Route path="/" element={<Navigate to="/memory" replace />} />
         </Routes>
       </Router>
       <Toaster position="top-right" expand={false} richColors closeButton />
