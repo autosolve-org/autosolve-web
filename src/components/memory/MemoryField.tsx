@@ -24,13 +24,13 @@ import {
 } from '../ui/popover';
 import { PhoneInput } from '../ui/phone-input';
 
-interface ProfileFieldProps {
+interface MemoryFieldProps {
   field: ProfileFieldType;
   value: unknown;
   onChange: (name: string, value: unknown) => void;
 }
 
-export const ProfileField: FC<ProfileFieldProps> = ({ field, value, onChange }) => {
+export const MemoryField: FC<MemoryFieldProps> = ({ field, value, onChange }) => {
   const isFullWidth = field.type === 'textarea' || field.type === 'social';
 
   return (

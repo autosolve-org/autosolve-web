@@ -21,7 +21,7 @@ const SidebarContent: FC = () => {
 
   const navItems = [
     { label: 'welcome.md', path: '/welcome' },
-    { label: 'profile.md', path: '/profile' },
+    { label: 'memory.md', path: '/memory' },
   ];
 
   return (
@@ -84,7 +84,15 @@ const SidebarContent: FC = () => {
                </div>
                <div className="px-2 py-1.5 text-dim flex flex-col mt-2">
                   <span className="text-[10px] uppercase opacity-50 mb-1 font-bold">USER</span>
-                  <span className="truncate">{user?.email || 'Guest'}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-dim/70 font-bold">ACCOUNT</span>
+                    <button 
+                        onClick={() => navigate('/settings')}
+                        className="bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded text-[10px] text-main transition-colors"
+                    >
+                        SETTINGS
+                    </button>
+                  </div>
                </div>
             </div>
          </div>
