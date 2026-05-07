@@ -4,10 +4,6 @@ import { toast } from "sonner";
 import { useAuth } from "../hooks/useAuth";
 import { type User } from "../services/auth.service";
 import {
-  profileSections,
-  calculateOverallCompletion,
-} from "../utils/profileFields";
-import {
   flattenDataLearned,
   normalizeDataLearned,
   promoteLearnedValue,
@@ -18,12 +14,6 @@ import { type UserProfileResponse } from "../models/profile.dto";
 import { extensionBridge } from "../utils/extensionBridge";
 
 // Components
-import {
-  User as UserIcon,
-  Briefcase,
-  GraduationCap,
-  MapPin,
-} from "lucide-react";
 
 // New Components
 import { MemoryForm } from "../components/memory/MemoryForm";
@@ -37,7 +27,6 @@ export const MemoryPage: FC = () => {
   const [originalData, setOriginalData] = useState<Record<string, unknown>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [completion, setCompletion] = useState(0);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [searchParams] = useSearchParams();
   const focusParam = searchParams.get("focus");
@@ -113,7 +102,6 @@ export const MemoryPage: FC = () => {
 
   // Update completion percentage
   useEffect(() => {
-    setCompletion(calculateOverallCompletion(formData));
 
     const hasChanged = () => {
       const allKeys = new Set([
@@ -353,7 +341,6 @@ export const MemoryPage: FC = () => {
         </div>
 
         <MemorySidebar
-          completion={completion}
           isSaving={isSaving}
           hasChanges={hasChanges}
           formData={formData}

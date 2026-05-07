@@ -7,11 +7,6 @@ import {
 } from "react";
 import { Sparkles, MapPin, X } from "lucide-react";
 import {
-  profileSections,
-  type ProfileSection,
-  type ProfileField as ProfileFieldType,
-} from "../../utils/profileFields";
-import {
   formatLearnedTextarea,
   normalizeDataLearned,
   parseLearnedTextarea,

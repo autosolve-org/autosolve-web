@@ -7,7 +7,6 @@ import {
 import { CVUploader } from "../CVUploader";
 
 interface MemorySidebarProps {
-  completion: number;
   isSaving: boolean;
   hasChanges: boolean;
   formData: Record<string, unknown>;
@@ -16,7 +15,6 @@ interface MemorySidebarProps {
 }
 
 export const MemorySidebar: FC<MemorySidebarProps> = ({
-  completion,
   isSaving,
   hasChanges,
   formData,

@@ -1,11 +1,10 @@
 import { type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { Terminal } from "lucide-react";
 import { OnboardingGuide } from "../components/OnboardingGuide";
 
 export const WelcomePage: FC = () => {
-  const { user } = useAuth();
+  useAuth();
   const navigate = useNavigate();
 
   return (
